@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dugaweld-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dugaweldDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - dugaweld-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  dugaweld-network:
+    driver: bridge

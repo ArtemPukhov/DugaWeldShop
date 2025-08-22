@@ -1,0 +1,41 @@
+# Используем официальный образ PostgreSQL
+FROM postgres:15-alpine
+
+# Устанавливаем переменные окружения для базы данных
+ENV POSTGRES_DB=dugaweldDB
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+
+# Копируем скрипты инициализации (если есть)
+COPY ./init-scripts/ /docker-entrypoint-initdb.d/
+
+# Открываем порт 5432
+EXPOSE 5432
+
+# Устанавливаем права доступа к директории данных
+RUN chmod 700 /var/lib/postgresql/data
+
+# Оптимизация производительности PostgreSQL
+RUN echo "shared_preload_libraries = 'pg_stat_statements'" >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "pg_stat_statements.track = all" >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "max_connections = 100" >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "shared_buffers = 256MB" >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "effective_cache_size = 1GB" >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "maintenance_work_mem = 64MB" >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "checkpoint_completion_target = 0.9" >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "wal_buffers = 16MB" >> /usr/share/postgresql/postgresql.conf.sample && \
+    echo "default_statistics_target = 100" >> /usr/share/postgresql/postgresql.conf.sample
+
+# Создаем директорию для скриптов инициализации
+RUN mkdir -p /docker-entrypoint-initdb.d
+
+# Устанавливаем рабочую директорию
+WORKDIR /var/lib/postgresql
+
+# Команда по умолчанию
+CMD ["postgres"]
+
+
+
+
+
