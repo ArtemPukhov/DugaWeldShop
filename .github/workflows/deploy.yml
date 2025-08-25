@@ -44,5 +44,12 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /opt/dugaweld
-            ./deploy.sh
+            # Создаем директорию если нет
+            mkdir -p /opt/dugaweld
+            
+            # Останавливаем сервис
+            sudo systemctl stop dugaweld || true
+            
+            # Копируем файлы (альтернатива git pull)
+            echo "Copying files..."
+            # Здесь можно использовать rsync или scp
