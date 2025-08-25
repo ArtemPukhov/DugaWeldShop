@@ -29,7 +29,7 @@ jobs:
       - name: 📦 Build Backend
         run: mvn clean package -DskipTests
 
-      - name: 🎨 Install dependencies (Frontend)
+      - name: 🎨 Install Frontend dependencies
         run: npm ci --legacy-peer-deps
         working-directory: ./frontend
 
@@ -44,12 +44,25 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Создаем директорию если нет
-            mkdir -p /opt/dugaweld
-            
-            # Останавливаем сервис
+            APP_DIR=/opt/dugaweld
+            JAR_FILE=target/dugaweld.jar
+            FRONTEND_DIR=frontend/.next
+
+            echo "Creating app directory..."
+            mkdir -p $APP_DIR
+
+            echo "Stopping service..."
             sudo systemctl stop dugaweld || true
-            
-            # Копируем файлы (альтернатива git pull)
-            echo "Copying files..."
-            # Здесь можно использовать rsync или scp
+
+            echo "Copying backend..."
+            scp -r $GITHUB_WORKSPACE/target/*.jar ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/dugaweld.jar
+
+            echo "Copying frontend..."
+            scp -r $GITHUB_WORKSPACE/frontend/.next ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/frontend/.next
+
+            echo "Restarting service..."
+            sudo systemctl daemon-reload
+            sudo systemctl start dugaweld
+            sudo systemctl enable dugaweld
+
+            echo "Deployment finished!"
