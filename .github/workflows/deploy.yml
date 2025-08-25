@@ -70,7 +70,7 @@ jobs:
             [Service]
             User=${{ secrets.SERVER_USER }}
             WorkingDirectory=$APP_DIR
-            ExecStart=/usr/bin/java -jar $APP_DIR/dugaweld.jar
+            ExecStart=/usr/bin/java -jar $APP_DIR/target/DugaWeldShop-1.0-SNAPSHOT.jar
             Environment="DB_URL=${{ secrets.DB_URL }}"
             Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
             Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
