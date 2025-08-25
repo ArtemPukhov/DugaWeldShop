@@ -9,6 +9,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      DB_USERNAME: dugaweld
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_URL: jdbc:postgresql://localhost:5432/dugaweld
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: dugaweld
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: dugaweld
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U dugaweld"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: 🎯 Checkout code
         uses: actions/checkout@v4
@@ -28,6 +48,10 @@ jobs:
 
       - name: 📦 Build Backend
         run: mvn clean package -DskipTests
+        env:
+          DB_USERNAME: ${{ env.DB_USERNAME }}
+          DB_PASSWORD: ${{ env.DB_PASSWORD }}
+          DB_URL: ${{ env.DB_URL }}
 
       - name: 🎨 Install Frontend dependencies
         run: npm ci --legacy-peer-deps
@@ -59,6 +83,13 @@ jobs:
 
             echo "Copying frontend..."
             scp -r $GITHUB_WORKSPACE/frontend/.next ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/frontend/.next
+
+            echo "Writing environment variables..."
+            cat <<EOF | sudo tee $APP_DIR/.env
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_URL=${{ secrets.DB_URL }}
+            EOF
 
             echo "Restarting service..."
             sudo systemctl daemon-reload
