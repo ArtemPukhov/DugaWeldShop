@@ -1,0 +1,44 @@
+name: 🚀 Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Разрешить ручной запуск
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🎯 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 📦 Build Backend
+        run: mvn clean package -DskipTests
+
+      - name: 🎨 Build Frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: 🚀 Deploy to Server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/dugaweld
+            ./deploy.sh
