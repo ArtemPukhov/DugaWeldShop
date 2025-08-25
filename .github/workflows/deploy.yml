@@ -30,7 +30,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: 🎨 Install dependencies (Frontend)
-        run: npm install --legacy-peer-deps
+        run: npm ci --legacy-peer-deps
         working-directory: ./frontend
 
       - name: 🎨 Build Frontend
