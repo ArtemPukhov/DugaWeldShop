@@ -45,8 +45,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             APP_DIR=/opt/dugaweld
-            JAR_FILE=$APP_DIR/target/DugaWeldShop-1.0-SNAPSHOT.jar
-            FRONTEND_DIR=$APP_DIR/frontend/.next
+            JAR_FILE=target/dugaweld.jar
+            FRONTEND_DIR=frontend/.next
             SERVICE_FILE=/etc/systemd/system/dugaweld.service
 
             echo "Creating app directory..."
@@ -55,34 +55,34 @@ jobs:
             echo "Stopping service..."
             sudo systemctl stop dugaweld || true
 
-            echo "Copying backend JAR..."
-            scp -r $GITHUB_WORKSPACE/target/*.jar ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$JAR_FILE
+            echo "Copying backend..."
+            scp -r $GITHUB_WORKSPACE/target/*.jar ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/target/DugaWeldShop-1.0-SNAPSHOT.jar
 
             echo "Copying frontend..."
-            scp -r $GITHUB_WORKSPACE/frontend/.next ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$FRONTEND_DIR
+            scp -r $GITHUB_WORKSPACE/frontend/.next ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/frontend/.next
 
             echo "Writing systemd service file..."
             sudo tee $SERVICE_FILE > /dev/null <<EOF
-  [Unit]
-  Description=DugaWeld Application
-  After=network.target
-  
-  [Service]
-  User=${{ secrets.SERVER_USER }}
-  WorkingDirectory=$APP_DIR
-  ExecStart=/usr/bin/java -jar $JAR_FILE
-  Environment="DB_URL=${{ secrets.DB_URL }}"
-  Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
-  Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
-  Restart=always
-  
-  [Install]
-  WantedBy=multi-user.target
-  EOF
-  
-  echo "Reloading systemd and starting service..."
-  sudo systemctl daemon-reload
-  sudo systemctl restart dugaweld
-  sudo systemctl enable dugaweld
-  
-  echo "Deployment finished!"
+            [Unit]
+            Description=DugaWeld Application
+            After=network.target
+            
+            [Service]
+            User=${{ secrets.SERVER_USER }}
+            WorkingDirectory=$APP_DIR
+            ExecStart=/usr/bin/java -jar $APP_DIR/target/DugaWeldShop-1.0-SNAPSHOT.jar
+            Environment="DB_URL=${{ secrets.DB_URL }}"
+            Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
+            Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+            Restart=always
+            
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+            
+            echo "Reloading systemd and starting service..."
+            sudo systemctl daemon-reload
+            sudo systemctl restart dugaweld
+            sudo systemctl enable dugaweld
+            
+            echo "Deployment finished!"
