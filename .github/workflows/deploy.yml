@@ -3,7 +3,7 @@ name: 🚀 Deploy to Production
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # Разрешить ручной запуск
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -23,15 +23,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ./frontend/package-lock.json
 
       - name: 📦 Build Backend
         run: mvn clean package -DskipTests
 
+      - name: 🎨 Install dependencies (Frontend)
+        run: npm install --legacy-peer-deps
+        working-directory: ./frontend
+
       - name: 🎨 Build Frontend
-        run: |
-          cd frontend
-          npm install --legacy-peer-deps
-          NEXT_IGNORE_ESLINT=1 npm run build
+        run: NEXT_IGNORE_ESLINT=1 npm run build
+        working-directory: ./frontend
 
       - name: 🚀 Deploy to Server
         uses: appleboy/ssh-action@v0.1.10
