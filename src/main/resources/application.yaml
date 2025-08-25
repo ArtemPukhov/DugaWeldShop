@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/dugawelddb
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/dugawelddb}
     username: ${DB_USERNAME:artemp}
     password: ${DB_PASSWORD:artemp}
   jpa:
