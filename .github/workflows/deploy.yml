@@ -9,26 +9,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      DB_USERNAME: dugaweld
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_URL: jdbc:postgresql://localhost:5432/dugaweld
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: dugaweld
-          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          POSTGRES_DB: dugaweld
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U dugaweld"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - name: 🎯 Checkout code
         uses: actions/checkout@v4
@@ -48,10 +28,6 @@ jobs:
 
       - name: 📦 Build Backend
         run: mvn clean package -DskipTests
-        env:
-          DB_USERNAME: ${{ env.DB_USERNAME }}
-          DB_PASSWORD: ${{ env.DB_PASSWORD }}
-          DB_URL: ${{ env.DB_URL }}
 
       - name: 🎨 Install Frontend dependencies
         run: npm ci --legacy-peer-deps
@@ -71,6 +47,7 @@ jobs:
             APP_DIR=/opt/dugaweld
             JAR_FILE=target/dugaweld.jar
             FRONTEND_DIR=frontend/.next
+            SERVICE_FILE=/etc/systemd/system/dugaweld.service
 
             echo "Creating app directory..."
             mkdir -p $APP_DIR
@@ -84,16 +61,28 @@ jobs:
             echo "Copying frontend..."
             scp -r $GITHUB_WORKSPACE/frontend/.next ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/frontend/.next
 
-            echo "Writing environment variables..."
-            cat <<EOF | sudo tee $APP_DIR/.env
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            DB_URL=${{ secrets.DB_URL }}
-            EOF
-
-            echo "Restarting service..."
-            sudo systemctl daemon-reload
-            sudo systemctl start dugaweld
-            sudo systemctl enable dugaweld
-
-            echo "Deployment finished!"
+            echo "Writing systemd service file..."
+            sudo tee $SERVICE_FILE > /dev/null <<EOF
+  [Unit]
+  Description=DugaWeld Application
+  After=network.target
+  
+  [Service]
+  User=${{ secrets.SERVER_USER }}
+  WorkingDirectory=$APP_DIR
+  ExecStart=/usr/bin/java -jar $APP_DIR/dugaweld.jar
+  Environment="DB_URL=${{ secrets.DB_URL }}"
+  Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
+  Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+  Restart=always
+  
+  [Install]
+  WantedBy=multi-user.target
+  EOF
+  
+  echo "Reloading systemd and starting service..."
+  sudo systemctl daemon-reload
+  sudo systemctl restart dugaweld
+  sudo systemctl enable dugaweld
+  
+  echo "Deployment finished!"
