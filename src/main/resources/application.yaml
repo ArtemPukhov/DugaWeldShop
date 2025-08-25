@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/dugaweldDB
-    username: ${DB_USERNAME:shopuser}
-    password: ${DB_PASSWORD:{tkkjeDjhkl202!}
+    url: jdbc:postgresql://localhost:5432/dugawelddb
+    username: ${DB_USERNAME:artemp}
+    password: ${DB_PASSWORD:artemp}
   jpa:
     hibernate:
       ddl-auto: update
