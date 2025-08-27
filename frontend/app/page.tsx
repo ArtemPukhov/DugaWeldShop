@@ -22,7 +22,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8080/products`)
+    fetch(`/api/products`)
       .then((res) => {
         if (!res.ok) throw new Error(`Ошибка ${res.status}`);
         return res.json();
@@ -40,10 +40,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
       <Header />
 
-      {/* Баннер сверху */}
       <section className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white text-center py-20">
         <h2 className="text-4xl font-bold mb-4">
           Сварочное оборудование для профессионалов
@@ -54,12 +52,9 @@ export default function HomePage() {
         </Button>
       </section>
 
-      {/* Основной блок: слева категории, справа товары */}
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-6 p-6 sm:p-10 flex-1">
-        {/* Слева: категории */}
         <CategoryList />
 
-        {/* Справа: товары */}
         <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {loading ? (
             <p className="col-span-full text-center text-gray-500">
@@ -107,7 +102,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
