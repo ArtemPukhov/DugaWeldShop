@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-async rewrites() {
+  async rewrites() {
     return [
       {
         source: "/api/:path*",
@@ -10,12 +10,15 @@ async rewrites() {
   },
 };
 
-module.exports = {
-eslint: {
-    ignoreDuringBuilds: true,
-},
-typescript: {
-ignoreBuildErrors: true,
-},
-nextConfig
-}
+module.exports = Object.assign(
+  {},
+  {
+    eslint: {
+      ignoreDuringBuilds: true,
+    },
+    typescript: {
+      ignoreBuildErrors: true,
+    },
+  },
+  nextConfig
+);
