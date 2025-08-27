@@ -44,7 +44,7 @@ export default function HomePage() {
 
       <section className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white text-center py-20">
         <h2 className="text-4xl font-bold mb-4">
-          Сварочное оборудование для профессионалов
+          Сварочное оборудование для профессионалов!!!!!!!
         </h2>
         <p className="mb-6">Лучшие бренды, выгодные цены, доставка по всей стране</p>
         <Button className="bg-black hover:bg-gray-800 text-white px-6 py-3 rounded-xl">
