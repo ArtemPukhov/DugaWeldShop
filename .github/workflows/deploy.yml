@@ -53,7 +53,7 @@ jobs:
 
             echo "Stopping services..."
             sudo systemctl stop dugaweld || true
-            sudo systemctl stop dugaweld-frontend || true
+            sudo systemctl stop frontend || true
 
             echo "Copying backend JAR..."
             scp -r $GITHUB_WORKSPACE/target/$BACKEND_JAR ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/
