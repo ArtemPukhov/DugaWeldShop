@@ -29,13 +29,31 @@ jobs:
       - name: 📦 Build Backend
         run: mvn clean package -DskipTests
 
-      - name: 🎨 Build Frontend
+      - name: 🎨 Build Frontend locally (optional)
         run: |
           cd frontend
           npm ci --legacy-peer-deps
           NEXT_IGNORE_ESLINT=1 npm run build
 
-      - name: 🚀 Deploy to Server
+      - name: 📤 Copy Backend JAR to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "target/DugaWeldShop-1.0-SNAPSHOT.jar"
+          target: "/opt/dugaweld/"
+
+      - name: 📤 Copy Frontend source to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "frontend"
+          target: "/opt/dugaweld/frontend"
+
+      - name: 🚀 Deploy & restart services via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -48,18 +66,9 @@ jobs:
             SERVICE_FILE=/etc/systemd/system/dugaweld.service
             FRONTEND_SERVICE=/etc/systemd/system/frontend.service
 
-            echo "Creating app directory..."
-            mkdir -p $APP_DIR
-
             echo "Stopping services..."
             sudo systemctl stop dugaweld || true
             sudo systemctl stop frontend || true
-
-            echo "Copying backend JAR..."
-            scp -r $GITHUB_WORKSPACE/target/$BACKEND_JAR ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/
-
-            echo "Copying frontend source..."
-            scp -r $GITHUB_WORKSPACE/frontend ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:$APP_DIR/
 
             echo "Writing backend systemd service..."
             sudo tee $SERVICE_FILE > /dev/null <<EOF
@@ -96,7 +105,7 @@ jobs:
             WantedBy=multi-user.target
             EOF
             
-            echo "Installing frontend dependencies and building on server..."
+            echo "Installing frontend dependencies and building frontend on server..."
             cd $APP_DIR/$FRONTEND_DIR
             npm ci --legacy-peer-deps
             NEXT_IGNORE_ESLINT=1 npm run build
