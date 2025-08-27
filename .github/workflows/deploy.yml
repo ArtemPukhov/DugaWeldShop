@@ -104,8 +104,8 @@ jobs:
             echo "Reloading systemd and starting services..."
             sudo systemctl daemon-reload
             sudo systemctl enable dugaweld
-            sudo systemctl enable dugaweld-frontend
+            sudo systemctl enable frontend
             sudo systemctl restart dugaweld
-            sudo systemctl restart dugaweld-frontend
+            sudo systemctl restart frontend
             
             echo "Deployment finished!"
