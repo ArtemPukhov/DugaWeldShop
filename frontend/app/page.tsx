@@ -22,7 +22,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/products`)
+    fetch(`http://141.105.71.70:8080/products`)
       .then((res) => {
         if (!res.ok) throw new Error(`Ошибка ${res.status}`);
         return res.json();
