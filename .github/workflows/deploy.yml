@@ -26,15 +26,27 @@ jobs:
           cache: 'npm'
           cache-dependency-path: ./frontend/package-lock.json
 
+      # -------------------------------
+      # 1️⃣ Сборка Backend
+      # -------------------------------
       - name: 📦 Build Backend
         run: mvn clean package -DskipTests
 
-      - name: 🎨 Build Frontend locally (optional)
+      - name: ✅ Check Backend JAR
+        run: ls -lh target/
+
+      # -------------------------------
+      # 2️⃣ Сборка Frontend (локально, опционально)
+      # -------------------------------
+      - name: 🎨 Build Frontend locally
         run: |
           cd frontend
           npm ci --legacy-peer-deps
           NEXT_IGNORE_ESLINT=1 npm run build
 
+      # -------------------------------
+      # 3️⃣ Копирование Backend JAR на сервер
+      # -------------------------------
       - name: 📤 Copy Backend JAR to Server
         uses: appleboy/scp-action@master
         with:
@@ -44,6 +56,9 @@ jobs:
           source: "target/DugaWeldShop-1.0-SNAPSHOT.jar"
           target: "/opt/dugaweld/"
 
+      # -------------------------------
+      # 4️⃣ Копирование Frontend на сервер
+      # -------------------------------
       - name: 📤 Copy Frontend source to Server
         uses: appleboy/scp-action@master
         with:
@@ -51,8 +66,11 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "frontend"
-          target: "/opt/dugaweld/frontend"
+          target: "/opt/dugaweld/"
 
+      # -------------------------------
+      # 5️⃣ SSH: остановка сервисов и сборка фронта на сервере
+      # -------------------------------
       - name: 🚀 Deploy & restart services via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -63,7 +81,7 @@ jobs:
             APP_DIR=/opt/dugaweld
             BACKEND_JAR=DugaWeldShop-1.0-SNAPSHOT.jar
             FRONTEND_DIR=frontend
-            SERVICE_FILE=/etc/systemd/system/dugaweld.service
+            BACKEND_SERVICE=/etc/systemd/system/dugaweld.service
             FRONTEND_SERVICE=/etc/systemd/system/frontend.service
 
             echo "Stopping services..."
@@ -71,7 +89,7 @@ jobs:
             sudo systemctl stop frontend || true
 
             echo "Writing backend systemd service..."
-            sudo tee $SERVICE_FILE > /dev/null <<EOF
+            sudo tee $BACKEND_SERVICE > /dev/null <<EOF
             [Unit]
             Description=DugaWeld Backend
             After=network.target
@@ -80,7 +98,7 @@ jobs:
             User=${{ secrets.SERVER_USER }}
             WorkingDirectory=$APP_DIR
             ExecStart=/usr/bin/java -jar $APP_DIR/$BACKEND_JAR
-            Environment="DB_URL=${{ secrets.DB_URL }}"
+            Environment="DB_URL=jdbc:postgresql://localhost:5432/dugaweldDB"
             Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
             Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
             Restart=always
@@ -105,8 +123,9 @@ jobs:
             WantedBy=multi-user.target
             EOF
             
-            echo "Installing frontend dependencies and building frontend on server..."
+            echo "Cleaning and building frontend on server..."
             cd $APP_DIR/$FRONTEND_DIR
+            rm -rf node_modules .next
             npm ci --legacy-peer-deps
             NEXT_IGNORE_ESLINT=1 npm run build
             
