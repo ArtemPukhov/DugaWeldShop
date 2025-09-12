@@ -74,7 +74,9 @@ public class ProductService {
         dto.setPrice(product.getPrice());
 
         if (product.getImageUrl() != null) {
-            dto.setImageUrl("/images/" + product.getImageUrl()); // <-- API отдаёт путь
+            // всегда возвращаем относительный путь
+            Path path = Paths.get(product.getImageUrl());
+            dto.setImageUrl("/images/" + path.getFileName().toString());
         }
 
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
