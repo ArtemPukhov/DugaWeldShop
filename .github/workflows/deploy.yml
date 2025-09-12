@@ -10,15 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # -------------------------------
-      # 1️⃣ Checkout
-      # -------------------------------
       - name: 🎯 Checkout code
         uses: actions/checkout@v4
 
-      # -------------------------------
-      # 2️⃣ Setup Java & Node
-      # -------------------------------
       - name: ⚙️ Setup Java
         uses: actions/setup-java@v3
         with:
@@ -33,13 +27,25 @@ jobs:
           cache-dependency-path: ./frontend/package-lock.json
 
       # -------------------------------
-      # 3️⃣ Build Backend
+      # 1️⃣ Сборка Backend
       # -------------------------------
       - name: 📦 Build Backend
         run: mvn clean package -DskipTests
 
+      - name: ✅ Check Backend JAR
+        run: ls -lh target/
+
       # -------------------------------
-      # 4️⃣ Copy Backend to server
+      # 2️⃣ Сборка Frontend (локально, опционально)
+      # -------------------------------
+      - name: 🎨 Build Frontend locally
+        run: |
+          cd frontend
+          npm ci --legacy-peer-deps
+          NEXT_IGNORE_ESLINT=1 npm run build
+
+      # -------------------------------
+      # 3️⃣ Копирование Backend JAR на сервер
       # -------------------------------
       - name: 📤 Copy Backend JAR to Server
         uses: appleboy/scp-action@master
@@ -51,9 +57,9 @@ jobs:
           target: "/opt/dugaweld/src/"
 
       # -------------------------------
-      # 5️⃣ Copy Frontend source to server
+      # 4️⃣ Копирование Frontend на сервер
       # -------------------------------
-      - name: 📤 Copy Frontend to Server
+      - name: 📤 Copy Frontend source to Server
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -63,9 +69,9 @@ jobs:
           target: "/opt/dugaweld/"
 
       # -------------------------------
-      # 6️⃣ SSH: Build frontend & restart services
+      # 5️⃣ SSH: остановка сервисов и сборка фронта на сервере
       # -------------------------------
-      - name: 🚀 Deploy & restart services
+      - name: 🚀 Deploy & restart services via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -73,59 +79,61 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             APP_DIR=/opt/dugaweld
+            BACKEND_JAR=src/target/DugaWeldShop-1.0-SNAPSHOT.jar
             FRONTEND_DIR=frontend
-            BACKEND_JAR=src/DugaWeldShop-1.0-SNAPSHOT.jar
+            BACKEND_SERVICE=/etc/systemd/system/dugaweld.service
+            FRONTEND_SERVICE=/etc/systemd/system/frontend.service
 
-            # --- Stop services ---
+            echo "Stopping services..."
             sudo systemctl stop dugaweld || true
             sudo systemctl stop frontend || true
 
-            # --- Build Frontend on server ---
-            cd $APP_DIR/$FRONTEND_DIR
-            rm -rf node_modules .next
-            npm ci --legacy-peer-deps
-            NEXT_IGNORE_ESLINT=1 npm run build
-
-            # --- Write systemd backend service ---
-            sudo tee /etc/systemd/system/dugaweld.service > /dev/null <<EOF
+            echo "Writing backend systemd service..."
+            sudo tee $BACKEND_SERVICE > /dev/null <<EOF
             [Unit]
             Description=DugaWeld Backend
             After=network.target
-
+            
             [Service]
             User=${{ secrets.SERVER_USER }}
-            WorkingDirectory=$APP_DIR/src
+            WorkingDirectory=$APP_DIR
             ExecStart=/usr/bin/java -jar $APP_DIR/$BACKEND_JAR
             Environment="DB_URL=${{ secrets.DB_URL }}"
             Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
             Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
             Restart=always
-
+            
             [Install]
             WantedBy=multi-user.target
             EOF
-
-            # --- Write systemd frontend service ---
-            sudo tee /etc/systemd/system/frontend.service > /dev/null <<EOF
+            
+            echo "Writing frontend systemd service..."
+            sudo tee $FRONTEND_SERVICE > /dev/null <<EOF
             [Unit]
             Description=DugaWeld Frontend (Next.js)
             After=network.target
-
+            
             [Service]
             User=${{ secrets.SERVER_USER }}
             WorkingDirectory=$APP_DIR/$FRONTEND_DIR
             ExecStart=/usr/bin/npm run start
             Restart=always
-
+            
             [Install]
             WantedBy=multi-user.target
             EOF
-
-            # --- Reload systemd and restart services ---
+            
+            echo "Cleaning and building frontend on server..."
+            cd $APP_DIR/$FRONTEND_DIR
+            rm -rf node_modules .next
+            npm ci --legacy-peer-deps
+            NEXT_IGNORE_ESLINT=1 npm run build
+            
+            echo "Reloading systemd and starting services..."
             sudo systemctl daemon-reload
             sudo systemctl enable dugaweld
             sudo systemctl enable frontend
             sudo systemctl restart dugaweld
             sudo systemctl restart frontend
-
+            
             echo "Deployment finished!"
