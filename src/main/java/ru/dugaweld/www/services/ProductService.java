@@ -89,7 +89,7 @@ public class ProductService {
             throw new RuntimeException("Ошибка сохранения файла: " + e.getMessage());
         }
 
-        return saveImagesPath + "\\" + image.getOriginalFilename();
+        return saveImagesPath + image.getOriginalFilename();
     }
 }
 

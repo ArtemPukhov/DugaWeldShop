@@ -27,4 +27,4 @@ jwt:
   secret: ${JWT_SECRET:change_me_please_change_me_please_change_me_please}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}
 
-saveImagesPath: ${SAVE_IMAGES_PATH:/opt/dugaweld/images}
+saveImagesPath: ${SAVE_IMAGES_PATH:http://141.105.71.70/images/}
