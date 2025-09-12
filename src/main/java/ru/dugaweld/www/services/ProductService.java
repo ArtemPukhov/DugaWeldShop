@@ -24,6 +24,8 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     @Value("${saveImagesPath}")
     private String saveImagesPath;
+    @Value("${getImagesPath}")
+    private String getImagesPath;
 
     public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
@@ -89,7 +91,7 @@ public class ProductService {
             throw new RuntimeException("Ошибка сохранения файла: " + e.getMessage());
         }
 
-        return saveImagesPath + image.getOriginalFilename();
+        return getImagesPath + image.getOriginalFilename();
     }
 }
 
