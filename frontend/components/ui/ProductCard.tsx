@@ -17,7 +17,7 @@ export function ProductCard({ product }: { product: Product }) {
       {/* Картинка */}
       <div className="h-64 w-full overflow-hidden">
         <img
-          src={product.imageUrl || "/placeholder.png"}
+          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${product.imageUrl}`}
           alt={product.name}
           className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
         />
