@@ -72,13 +72,7 @@ public class ProductService {
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
-
-        if (product.getImageUrl() != null) {
-            // всегда возвращаем относительный путь
-            Path path = Paths.get(product.getImageUrl());
-            dto.setImageUrl("/images/" + path.getFileName().toString());
-        }
-
+        dto.setImageUrl(product.getImageUrl());
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
         return dto;
     }
@@ -95,7 +89,7 @@ public class ProductService {
             throw new RuntimeException("Ошибка сохранения файла: " + e.getMessage());
         }
 
-        return image.getOriginalFilename();
+        return saveImagesPath + "\\" + image.getOriginalFilename();
     }
 }
 
