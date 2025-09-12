@@ -3,11 +3,14 @@ package ru.dugaweld.www.controllers;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.dugaweld.www.dto.ProductDto;
 import ru.dugaweld.www.services.ProductService;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 
@@ -41,12 +44,24 @@ public class ProductController {
         return dto == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(dto);
     }
 
-    @PostMapping
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<ProductDto> create(@Valid @RequestBody ProductDto dto) {
-        ProductDto created = productService.create(dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ProductDto> create(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("price") BigDecimal price,
+            @RequestParam("categoryId") Long categoryId,
+            @RequestPart("image") MultipartFile image) {
+
+        ProductDto dto = new ProductDto();
+        dto.setName(name);
+        dto.setDescription(description);
+        dto.setPrice(price);
+        dto.setCategoryId(categoryId);
+
+        ProductDto created = productService.create(dto, image);
         return ResponseEntity.created(URI.create("/products/" + created.getId())).body(created);
     }
+
 
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAuthority('ROLE_ADMIN')")

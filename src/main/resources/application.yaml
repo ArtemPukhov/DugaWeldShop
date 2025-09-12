@@ -1,4 +1,9 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/dugaweldDB}
     username: ${DB_USERNAME:postgres}
@@ -21,3 +26,5 @@ logging:
 jwt:
   secret: ${JWT_SECRET:change_me_please_change_me_please_change_me_please}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+
+saveImagesPath: ${SAVE_IMAGES_PATH:/etc/nginx/sites-available/default}
