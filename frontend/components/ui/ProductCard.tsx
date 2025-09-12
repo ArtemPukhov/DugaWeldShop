@@ -16,14 +16,15 @@ export function ProductCard({ product }: { product: Product }) {
     <div className="group relative rounded-2xl bg-white shadow-lg overflow-hidden transition-shadow hover:shadow-2xl">
       {/* Картинка */}
       <div className="h-64 w-full overflow-hidden">
-          src={
-            product.imageUrl
-              ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${product.imageUrl}`
-              : "/placeholder.png"
-          }
-          alt={product.name}
-          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-        />
+          <img
+            src={
+              product.imageUrl
+                ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${product.imageUrl}`
+                : "/placeholder.png"
+            }
+            alt={product.name}
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+          />
       </div>
 
       {/* Содержимое */}
