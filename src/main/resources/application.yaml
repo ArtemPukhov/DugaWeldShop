@@ -5,12 +5,15 @@ spring:
     password: ${DB_PASSWORD:1706}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   main:
     allow-circular-references: true
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 
 logging:
   level:
