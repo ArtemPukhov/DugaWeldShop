@@ -78,8 +78,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            APP_DIR=/opt/dugaweld/src
-            BACKEND_JAR=DugaWeldShop-1.0-SNAPSHOT.jar
+            APP_DIR=/opt/dugaweld
+            BACKEND_JAR=/src/DugaWeldShop-1.0-SNAPSHOT.jar
             FRONTEND_DIR=frontend
             BACKEND_SERVICE=/etc/systemd/system/dugaweld.service
             FRONTEND_SERVICE=/etc/systemd/system/frontend.service
