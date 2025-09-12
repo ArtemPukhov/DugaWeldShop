@@ -21,7 +21,7 @@ type Category = {
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
-    const res = await fetch(`/api/products/${id}`, { cache: 'no-store' });
+    const res = await fetch(`/products/${id}`, { cache: 'no-store' });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -31,7 +31,7 @@ async function getProduct(id: string): Promise<Product | null> {
 
 async function getCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(`/api/categories`, { cache: 'no-store' });
+    const res = await fetch(`/categories`, { cache: 'no-store' });
     if (!res.ok) return [];
     return res.json();
   } catch {
