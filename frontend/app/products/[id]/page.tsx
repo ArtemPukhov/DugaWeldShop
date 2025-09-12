@@ -27,7 +27,7 @@ export default function ProductPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://141.105.71.70:8080/products/${params.id}`);
+        const res = await fetch(`/api/products/${params.id}`);
         if (!res.ok) {
           if (res.status === 404) {
             router.push('/404');
