@@ -46,7 +46,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     // Загрузка товаров
-    fetch("http://localhost:8080/products")
+    fetch("/api/products")
       .then((res) => {
         if (!res.ok) throw new Error(`Ошибка ${res.status}`);
         return res.json();
@@ -62,7 +62,7 @@ export default function CatalogPage() {
       });
 
     // Загрузка категорий
-    fetch("http://localhost:8080/categories")
+    fetch("/api/categories")
       .then((res) => res.json())
       .then((data) => setCategories(data))
       .catch((err) => console.error("Ошибка загрузки категорий:", err));

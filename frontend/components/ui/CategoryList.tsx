@@ -12,7 +12,7 @@ export default function CategoryList() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/categories") // или http://localhost:8080/categories
+    fetch("/api/categories") // через прокси
       .then(res => res.json())
       .then(data => setCategories(data))
       .catch(err => console.error("Ошибка загрузки категорий:", err));
