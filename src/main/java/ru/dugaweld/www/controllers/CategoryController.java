@@ -3,6 +3,7 @@ package ru.dugaweld.www.controllers;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.dugaweld.www.dto.CategoryDto;
 import ru.dugaweld.www.services.CategoryService;
@@ -30,20 +31,20 @@ public class CategoryController {
     }
 
     @PostMapping
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<CategoryDto> create(@Valid @RequestBody CategoryDto dto) {
         CategoryDto created = categoryService.create(dto);
         return ResponseEntity.created(URI.create("/categories/" + created.getId())).body(created);
     }
 
     @PutMapping("/{id}")
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public CategoryDto update(@PathVariable Long id, @Valid @RequestBody CategoryDto dto) {
         return categoryService.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();
