@@ -1,5 +1,8 @@
 // app/products/[id]/page.tsx
-import { notFound } from 'next/navigation';
+"use client"; // Делаем компонент клиентским
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -14,36 +17,74 @@ type Product = {
   categoryId: number;
 };
 
-type Category = {
-  id: number;
-  name: string;
-};
+export default function ProductPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-async function getProduct(id: string): Promise<Product | null> {
-  try {
-    const res = await fetch(`http://localhost:8080/products/${id}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`/api/products/${params.id}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            router.push('/404');
+            return;
+          }
+          throw new Error(`Ошибка ${res.status}`);
+        }
+        const data = await res.json();
+        setProduct(data);
+      } catch (err) {
+        console.error('Ошибка загрузки продукта:', err);
+        setError('Не удалось загрузить товар');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (params.id) {
+      fetchProduct();
+    }
+  }, [params.id, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+            <p className="text-gray-500">Загрузка товара...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
-}
 
-async function getCategories(): Promise<Category[]> {
-  try {
-    const res = await fetch(`http://localhost:8080/categories`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
+            <p className="text-gray-600 mb-6">{error || 'Товар не найден'}</p>
+            <Link
+              href="/"
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 py-3 rounded-xl"
+            >
+              На главную
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
-}
-
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id);
-  const categories = await getCategories();
-
-  if (!product) return notFound();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -60,7 +101,11 @@ export default async function ProductPage({ params }: { params: { id: string } }
             <img
               src={product.imageUrl || '/placeholder.png'}
               alt={product.name}
-              className="w-full h-96 object-cover rounded-2xl"
+              className="w-full h-96 object-contain rounded-2xl" // изменил на object-contain
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/placeholder.png';
+              }}
             />
           </div>
 
@@ -71,12 +116,18 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 {product.price.toLocaleString()} ₽
               </p>
               <div className="flex gap-4 mt-4">
-                <button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105">
+                <button
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105"
+                  onClick={() => {
+                    // Временная логика добавления в корзину
+                    alert(`Товар "${product.name}" добавлен в корзину!`);
+                  }}
+                >
                   В корзину
                 </button>
                 <Link
                   href="/"
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105"
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center"
                 >
                   На главную
                 </Link>
@@ -85,7 +136,10 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
             <div className="mt-6 border-t border-gray-200 pt-6">
               {product.description && (
-                <p className="text-gray-600 mb-4">{product.description}</p>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Описание</h3>
+                  <p className="text-gray-600">{product.description}</p>
+                </div>
               )}
             </div>
           </div>

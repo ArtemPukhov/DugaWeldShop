@@ -22,7 +22,7 @@ type Category = {
 // Получаем категорию по ID
 async function getCategory(id: string): Promise<Category | null> {
   try {
-    const res = await fetch(`http://localhost:8080/categories/${id}`, { cache: "no-store" });
+    const res = await fetch(`/api/categories/${id}`, { cache: "no-store" });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -33,7 +33,7 @@ async function getCategory(id: string): Promise<Category | null> {
 // Получаем товары этой категории
 async function getProductsByCategory(id: string): Promise<Product[]> {
   try {
-    const res = await fetch(`http://localhost:8080/products/by-category/${id}`, { cache: "no-store" });
+    const res = await fetch(`/api/products/by-category/${id}`, { cache: "no-store" });
     if (!res.ok) return [];
     return res.json();
   } catch {

@@ -1,13 +1,19 @@
 package ru.dugaweld.www.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import ru.dugaweld.www.dto.ProductDto;
 import ru.dugaweld.www.models.Category;
 import ru.dugaweld.www.models.Product;
 import ru.dugaweld.www.repositories.CategoryRepository;
 import ru.dugaweld.www.repositories.ProductRepository;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,6 +22,10 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    @Value("${saveImagesPath}")
+    private String saveImagesPath;
+    @Value("${getImagesPath}")
+    private String getImagesPath;
 
     public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
         this.productRepository = productRepository;
@@ -32,8 +42,9 @@ public class ProductService {
 
     public ProductDto findById(Long id) { return productRepository.findById(id).map(this::toDto).orElse(null); }
 
-    public ProductDto create(ProductDto dto) {
+    public ProductDto create(ProductDto dto, MultipartFile image) {
         Product product = new Product();
+        dto.setImageUrl(uploadImage(image));
         apply(dto, product);
         return toDto(productRepository.save(product));
     }
@@ -67,7 +78,31 @@ public class ProductService {
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
         return dto;
     }
+
+    private String uploadImage(MultipartFile image) {
+        // тут сохраняем картинку в папку /opt/dugaweld/images/
+        // например:
+        Path uploadPath = Paths.get(saveImagesPath);
+        try {
+            Files.createDirectories(uploadPath);
+            Path filePath = uploadPath.resolve(image.getOriginalFilename());
+            image.transferTo(filePath.toFile());
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка сохранения файла: " + e.getMessage());
+        }
+
+        return getImagesPath + image.getOriginalFilename();
+    }
 }
+
+
+
+
+
+
+
+
+
 
 
 

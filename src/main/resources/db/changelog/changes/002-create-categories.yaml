@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-categories
+      author: ai
+      changes:
+        - createTable:
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: description
+                  type: TEXT
+                  constraints:
+                    nullable: true
+
