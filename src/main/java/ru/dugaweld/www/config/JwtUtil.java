@@ -13,13 +13,16 @@ import java.nio.charset.StandardCharsets;
 public class JwtUtil {
     private final Key key;
     private final long expirationTimeMs;
+    private final long refreshExpirationTimeMs;
 
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration-ms:3600000}") long expirationTimeMs
+            @Value("${jwt.expiration-ms:3600000}") long expirationTimeMs,
+            @Value("${jwt.refresh-expiration-ms:1209600000}") long refreshExpirationTimeMs
     ) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationTimeMs = expirationTimeMs;
+        this.refreshExpirationTimeMs = refreshExpirationTimeMs;
     }
 
     public String generateToken(String username) {
@@ -47,5 +50,23 @@ public class JwtUtil {
         } catch (JwtException e) {
             return false;
         }
+    }
+
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + refreshExpirationTimeMs))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public Date extractExpiration(String token) {
+        return Jwts.parser()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
     }
 }

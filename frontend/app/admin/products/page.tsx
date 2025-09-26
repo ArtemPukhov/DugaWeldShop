@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, apiFetchForm, apiFetchJSON } from "@/lib/api";
+import AdminTopBar from "@/components/AdminTopBar";
 
 type Category = { id: number; name: string };
 type Product = {
@@ -120,7 +121,9 @@ export default function AdminProductsPage() {
   const isEditing = Boolean(editingId);
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-4 space-y-6">
+    <div>
+      <AdminTopBar />
+      <div className="max-w-5xl mx-auto py-8 px-4 space-y-6">
       <h1 className="text-2xl font-semibold">Товары</h1>
 
       {error && <div className="text-red-600">{error}</div>}
@@ -256,6 +259,7 @@ export default function AdminProductsPage() {
             </tbody>
           </table>
         )}
+      </div>
       </div>
     </div>
   );

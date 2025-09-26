@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, apiFetchJSON } from "@/lib/api";
+import AdminTopBar from "@/components/AdminTopBar";
 
 type Category = {
   id?: number;
@@ -72,7 +73,9 @@ export default function AdminCategoriesPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+    <div>
+      <AdminTopBar />
+      <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
       <h1 className="text-2xl font-semibold">Категории</h1>
 
       {error && <div className="text-red-600">{error}</div>}
@@ -154,6 +157,7 @@ export default function AdminCategoriesPage() {
             </tbody>
           </table>
         )}
+      </div>
       </div>
     </div>
   );

@@ -17,6 +17,8 @@ import ru.dugaweld.www.dto.LoginRequest;
 import ru.dugaweld.www.dto.TokenResponse;
 import ru.dugaweld.www.dto.RegisterRequest;
 
+import java.util.Date;
+
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Аутентификация", description = "Методы регистрации и входа")
@@ -46,9 +48,40 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
             String token = jwtUtil.generateToken(request.getUsername());
-            return ResponseEntity.ok(new TokenResponse(token));
+            String refresh = jwtUtil.generateRefreshToken(request.getUsername());
+            return ResponseEntity.ok(new TokenResponse(token, refresh));
         } catch (AuthenticationException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Неверный логин или пароль");
         }
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "Обновление JWT", description = "Принимает refreshToken и выдаёт новую пару токенов")
+    public ResponseEntity<?> refresh(@Valid @RequestBody ru.dugaweld.www.dto.RefreshRequest request) {
+        if (!jwtUtil.validateToken(request.getRefreshToken())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String username = jwtUtil.extractUsername(request.getRefreshToken());
+        String token = jwtUtil.generateToken(username);
+        String refresh = jwtUtil.generateRefreshToken(username);
+        return ResponseEntity.ok(new TokenResponse(token, refresh));
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Выход", description = "Статлес-выход: клиент удаляет JWT у себя. Возвращаем время истечения refresh")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization", required = false) String authHeader,
+                                    @RequestBody(required = false) ru.dugaweld.www.dto.RefreshRequest request) {
+        // В статлес-сценарии сервер не хранит состояние. Клиент должен забыть оба токена.
+        // Для UX можно вернуть клиенту подсказку, когда истечёт текущий refresh (если передан).
+        Date refreshExp = null;
+        try {
+            if (request != null && request.getRefreshToken() != null) {
+                refreshExp = jwtUtil.extractExpiration(request.getRefreshToken());
+            }
+        } catch (Exception ignored) {}
+        return ResponseEntity.ok(java.util.Map.of(
+                "message", "logged_out",
+                "refreshExp", refreshExp != null ? refreshExp.getTime() : null
+        ));
     }
 }
