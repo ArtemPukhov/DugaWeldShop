@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { apiFetch, apiFetchForm, apiFetchJSON } from "@/lib/api";
 import AdminTopBar from "@/components/AdminTopBar";
+import { CsvImport } from "@/components/CsvImport";
 
 type Category = { id: number; name: string };
 type Product = {
@@ -127,6 +128,8 @@ export default function AdminProductsPage() {
       <h1 className="text-2xl font-semibold">Товары</h1>
 
       {error && <div className="text-red-600">{error}</div>}
+
+      <CsvImport onImportComplete={fetchData} />
 
       <form
         onSubmit={isEditing ? handleSave : handleCreate}
