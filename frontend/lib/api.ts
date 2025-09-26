@@ -99,6 +99,18 @@ export async function apiFetchForm<T = unknown>(
   return (await res.json()) as T;
 }
 
+export async function apiPreviewCsv(file: File): Promise<{ csvHeaders: string[]; targetFields: string[]; previewData: any[]; totalRows: number }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiFetchForm("/products/preview-csv", formData);
+}
+
+export async function apiImportCsv(file: File): Promise<{ message: string; importedCount: number; products: any[] }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiFetchForm("/products/import-csv", formData);
+}
+
 export function saveToken(token: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem("dw_admin_token", token);
