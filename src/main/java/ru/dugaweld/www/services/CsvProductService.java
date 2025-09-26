@@ -1,9 +1,11 @@
 package ru.dugaweld.www.services;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import ru.dugaweld.www.config.ByteArrayMultipartFile;
 import ru.dugaweld.www.dto.CsvProductDto;
 import ru.dugaweld.www.dto.ProductDto;
@@ -23,6 +25,10 @@ import java.util.HashMap;
 public class CsvProductService {
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
+    @Value("${saveImagesPath}")
+    private String saveImagesPath;
+    @Value("${getImagesPath}")
+    private String getImagesPath;
 
     public CsvProductService(ProductService productService, CategoryRepository categoryRepository) {
         this.productService = productService;
@@ -229,29 +235,69 @@ public class CsvProductService {
         return value.replaceAll("<[^>]*>", "").trim(); // Удаление всех HTML-тегов
     }
 
-    private MultipartFile downloadImageFromUrl(String imageUrl) {
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setAccept(List.of(MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG));
-            HttpEntity<String> entity = new HttpEntity<>(headers);
+private MultipartFile downloadImageFromUrl(String imageUrl) {
+    try {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(List.of(MediaType.IMAGE_JPEG, MediaType.IMAGE_PNG));
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<byte[]> response = restTemplate.exchange(
-                    imageUrl,
-                    HttpMethod.GET,
-                    entity,
-                    byte[].class
-            );
+        ResponseEntity<byte[]> response = restTemplate.exchange(
+                imageUrl,
+                HttpMethod.GET,
+                entity,
+                byte[].class
+        );
 
-            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
-                throw new IOException("Ошибка загрузки изображения: статус " + response.getStatusCode());
-            }
-
-            String fileName = "image.jpg"; // Можно сделать динамичным из URL или MIME-типа
-            return new ByteArrayMultipartFile(fileName, response.getBody());
-
-        } catch (Exception e) {
-            throw new RuntimeException("Не удалось загрузить изображение по URL: " + imageUrl, e);
+        if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
+            throw new IOException("Ошибка загрузки изображения: статус " + response.getStatusCode());
         }
+
+        String fileName = generateFileNameFromUrlOrMimeType(imageUrl, response.getHeaders().getContentType());
+        ByteArrayMultipartFile file = new ByteArrayMultipartFile(fileName, response.getBody());
+
+        file.saveToFile(saveImagesPath);
+
+        return file;
+
+    } catch (Exception e) {
+        throw new RuntimeException("Не удалось загрузить изображение по URL: " + imageUrl, e);
+    }
+}
+
+
+    private String generateFileNameFromUrlOrMimeType(String imageUrl, MediaType contentType) {
+        String defaultExtension = ".jpg"; // Расширение по умолчанию
+
+        // Пытаемся извлечь расширение из URL
+        String[] urlParts = imageUrl.split("\\.");
+        if (urlParts.length > 1) {
+            String ext = urlParts[urlParts.length - 1].toLowerCase();
+            if (!ext.equals(urlParts[urlParts.length - 1])) { // Проверка на случай не корректного расширения
+                defaultExtension = "." + ext;
+            }
+        }
+
+        // Если есть contentType, используем его для определения расширения
+        if (contentType != null) {
+            switch (contentType.toString()) {
+                case "image/png":
+                    defaultExtension = ".png";
+                    break;
+                case "image/jpeg":
+                    defaultExtension = ".jpg";
+                    break;
+                case "image/gif":
+                    defaultExtension = ".gif";
+                    break;
+                case "image/webp":
+                    defaultExtension = ".webp";
+                    break;
+            }
+        }
+
+        // Генерируем уникальное имя файла (например, из хэша URL)
+        String uniqueName = Integer.toHexString(imageUrl.hashCode());
+        return "image_" + uniqueName + defaultExtension;
     }
 }
