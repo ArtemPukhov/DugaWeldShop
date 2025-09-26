@@ -2,9 +2,10 @@ package ru.dugaweld.www.config;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ByteArrayMultipartFile implements MultipartFile {
     private final byte[] content;
@@ -27,7 +28,7 @@ public class ByteArrayMultipartFile implements MultipartFile {
 
     @Override
     public String getContentType() {
-        return "image/jpeg"; // Можно расширить логику определения MIME-типа
+        return "image/jpeg"; // Можно улучшить логику определения MIME-типа
     }
 
     @Override
@@ -51,7 +52,21 @@ public class ByteArrayMultipartFile implements MultipartFile {
     }
 
     @Override
-    public void transferTo(java.io.File dest) throws IOException, IllegalStateException {
-        // Реализуйте, если нужно сохранять файл на диск
+    public void transferTo(File dest) throws IOException, IllegalStateException {
+        if (dest.exists()) {
+            dest.delete();
+        }
+        Files.write(dest.toPath(), content);
+    }
+
+    // Вспомогательный метод для сохранения файла в указанную директорию
+    public void saveToFile(String directoryPath) throws IOException {
+        File dir = new File(directoryPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        Path filePath = Paths.get(directoryPath, name);
+        transferTo(filePath.toFile());
     }
 }
