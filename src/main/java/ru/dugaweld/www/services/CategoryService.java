@@ -30,6 +30,7 @@ public class CategoryService {
         Category category = new Category();
         category.setName(dto.getName());
         category.setDescription(dto.getDescription());
+        category.setImageUrl(dto.getImageUrl());
         return toDto(categoryRepository.save(category));
     }
 
@@ -37,6 +38,7 @@ public class CategoryService {
         Category existing = categoryRepository.findById(id).orElseThrow();
         existing.setName(dto.getName());
         existing.setDescription(dto.getDescription());
+        existing.setImageUrl(dto.getImageUrl());
         return toDto(categoryRepository.save(existing));
     }
 
@@ -49,9 +51,12 @@ public class CategoryService {
         dto.setId(category.getId());
         dto.setName(category.getName());
         dto.setDescription(category.getDescription());
+        dto.setImageUrl(category.getImageUrl());
         return dto;
     }
 }
+
+
 
 
 

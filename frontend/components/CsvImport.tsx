@@ -128,7 +128,7 @@ export function CsvImport({ onImportComplete }: CsvImportProps) {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h3 className="text-lg font-semibold mb-4">Импорт товаров из CSV</h3>
+      <h3 className="text-gray-700 font-semibold mb-4">Импорт товаров из CSV</h3>
       
       <div className="space-y-4">
         <div>

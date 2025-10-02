@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 type Category = {
   id: number;
   name: string;
+  imageUrl?: string;
 };
 
 export default function CategoryList() {
