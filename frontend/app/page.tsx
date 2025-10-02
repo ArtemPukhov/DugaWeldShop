@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import CategoryList from "@/components/ui/CategoryList";
+import CategoryHierarchy from "@/components/ui/CategoryHierarchy";
 
 type Category = {
   id: number;
   name: string;
   description?: string;
   imageUrl?: string;
+  parentCategoryId?: number;
+  parentCategoryName?: string;
 };
 
 export default function HomePage() {
@@ -20,7 +22,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/api/categories`)
+    fetch(`/api/categories/root`)
       .then((res) => {
         if (!res.ok) throw new Error(`Ошибка ${res.status}`);
         return res.json();
@@ -71,33 +73,7 @@ export default function HomePage() {
             </p>
           ) : (
             categories.map((category) => (
-              <Link key={category.id} href={`/categories/${category.id}`} className="group">
-                <div className="relative rounded-2xl bg-white shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                  <div className="h-48 overflow-hidden bg-gradient-to-br from-yellow-100 to-orange-100">
-                    <img
-                      src={category.imageUrl || "/placeholder.png"}
-                      alt={category.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 text-gray-900 group-hover:text-yellow-600 transition-colors">
-                      {category.name}
-                    </h3>
-                    {category.description && (
-                      <p className="text-gray-600 text-sm line-clamp-2">
-                        {category.description}
-                      </p>
-                    )}
-                    <div className="mt-4 flex items-center text-yellow-600 font-medium text-sm group-hover:text-yellow-700">
-                      Перейти к товарам
-                      <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+              <CategoryHierarchy key={category.id} category={category} />
             ))
           )}
         </div>

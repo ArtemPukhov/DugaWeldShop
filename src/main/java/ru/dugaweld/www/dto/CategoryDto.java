@@ -12,6 +12,10 @@ public class CategoryDto {
 
     private String imageUrl;
 
+    private Long parentCategoryId;
+
+    private String parentCategoryName;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -20,6 +24,10 @@ public class CategoryDto {
     public void setDescription(String description) { this.description = description; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public Long getParentCategoryId() { return parentCategoryId; }
+    public void setParentCategoryId(Long parentCategoryId) { this.parentCategoryId = parentCategoryId; }
+    public String getParentCategoryName() { return parentCategoryName; }
+    public void setParentCategoryName(String parentCategoryName) { this.parentCategoryName = parentCategoryName; }
 }
 
 

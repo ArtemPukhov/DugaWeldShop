@@ -9,4 +9,8 @@ databaseChangeLog:
       file: classpath:db/changelog/changes/004-add-image-to-categories.yaml
   - include:
       file: classpath:db/changelog/changes/005-insert-sample-categories.yaml
+  - include:
+      file: classpath:db/changelog/changes/007-add-parent-category.yaml
+  - include:
+      file: classpath:db/changelog/changes/008-add-sample-subcategories.yaml
 
