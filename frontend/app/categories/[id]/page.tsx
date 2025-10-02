@@ -1,4 +1,7 @@
 // app/categories/[id]/page.tsx
+"use client";
+
+import { useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -17,35 +20,76 @@ type Product = {
 type Category = {
   id: number;
   name: string;
+  imageUrl?: string;
 };
 
-// Получаем категорию по ID
-async function getCategory(id: string): Promise<Category | null> {
-  try {
-    const res = await fetch(`/api/categories/${id}`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
+export default function CategoryPage({ params }: { params: { id: string } }) {
+  const [category, setCategory] = useState<Category | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Получаем категорию
+        const categoryRes = await fetch(`/api/categories/${params.id}`);
+        if (!categoryRes.ok) {
+          throw new Error(`Категория не найдена (${categoryRes.status})`);
+        }
+        const categoryData = await categoryRes.json();
+        setCategory(categoryData);
+
+        // Получаем товары категории
+        const productsRes = await fetch(`/api/products/by-category/${params.id}`);
+        if (productsRes.ok) {
+          const productsData = await productsRes.json();
+          setProducts(productsData);
+        }
+      } catch (err: any) {
+        console.error("Ошибка загрузки:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-xl text-gray-500">Загрузка...</p>
+        </div>
+        <Footer />
+      </div>
+    );
   }
-}
 
-// Получаем товары этой категории
-async function getProductsByCategory(id: string): Promise<Product[]> {
-  try {
-    const res = await fetch(`/api/products/by-category/${id}`, { cache: "no-store" });
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
+  if (error || !category) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-xl text-red-500 mb-4">
+              {error || "Категория не найдена"}
+            </p>
+            <Link href="/" className="text-blue-500 hover:underline">
+              Вернуться на главную
+            </Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
   }
-}
-
-export default async function CategoryPage({ params }: { params: { id: string } }) {
-  const category = await getCategory(params.id);
-  const products = await getProductsByCategory(params.id);
-
-  if (!category) return notFound();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

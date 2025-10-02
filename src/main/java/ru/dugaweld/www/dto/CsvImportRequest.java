@@ -11,3 +11,6 @@ import java.util.List;
 public class CsvImportRequest {
     private List<ColumnMappingDto> columnMappings;
 }
+
+
+

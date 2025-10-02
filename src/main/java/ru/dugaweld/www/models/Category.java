@@ -19,7 +19,12 @@ public class Category {
     private String name;
 
     private String description;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }
+
+
 
 
 
