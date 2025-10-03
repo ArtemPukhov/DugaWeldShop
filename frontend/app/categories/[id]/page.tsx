@@ -1,7 +1,7 @@
 // app/categories/[id]/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -23,7 +23,8 @@ type Category = {
   imageUrl?: string;
 };
 
-export default function CategoryPage({ params }: { params: { id: string } }) {
+export default function CategoryPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,19 +37,16 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
         setError(null);
 
         // Получаем категорию
-        const categoryRes = await fetch(`/api/categories/${params.id}`);
+        const categoryRes = await fetch(`/api/categories/${resolvedParams.id}`);
         if (!categoryRes.ok) {
           throw new Error(`Категория не найдена (${categoryRes.status})`);
         }
         const categoryData = await categoryRes.json();
         setCategory(categoryData);
 
-        // Получаем товары категории
-        const productsRes = await fetch(`/api/products/by-category/${params.id}`);
-        if (productsRes.ok) {
-          const productsData = await productsRes.json();
-          setProducts(productsData);
-        }
+        // Получаем все товары из категории и её дочерних категорий
+        const allProducts = await fetchProductsWithSubcategories(resolvedParams.id);
+        setProducts(allProducts);
       } catch (err: any) {
         console.error("Ошибка загрузки:", err);
         setError(err.message);
@@ -58,7 +56,41 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     }
 
     fetchData();
-  }, [params.id]);
+  }, [resolvedParams.id]);
+
+  // Функция для получения всех товаров из категории и её дочерних категорий
+  async function fetchProductsWithSubcategories(categoryId: string): Promise<Product[]> {
+    const allProducts: Product[] = [];
+    
+    // Получаем товары из текущей категории
+    try {
+      const productsRes = await fetch(`/api/products/by-category/${categoryId}`);
+      if (productsRes.ok) {
+        const productsData = await productsRes.json();
+        allProducts.push(...productsData);
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки товаров категории:", error);
+    }
+
+    // Получаем дочерние категории
+    try {
+      const subcategoriesRes = await fetch(`/api/categories/${categoryId}/subcategories`);
+      if (subcategoriesRes.ok) {
+        const subcategories = await subcategoriesRes.json();
+        
+        // Рекурсивно получаем товары из каждой дочерней категории
+        for (const subcategory of subcategories) {
+          const subcategoryProducts = await fetchProductsWithSubcategories(subcategory.id.toString());
+          allProducts.push(...subcategoryProducts);
+        }
+      }
+    } catch (error) {
+      console.error("Ошибка загрузки дочерних категорий:", error);
+    }
+
+    return allProducts;
+  }
 
   if (loading) {
     return (
@@ -99,6 +131,11 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       {/* Баннер категории */}
       <section className="bg-yellow-400 text-black text-center py-16">
         <h1 className="text-4xl font-bold">{category.name}</h1>
+        {products.length > 0 && (
+          <p className="text-lg mt-2">
+            Найдено товаров: {products.length}
+          </p>
+        )}
       </section>
 
       {/* Основной блок: слева категории, справа товары */}
@@ -107,12 +144,18 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
         <CategoryList />
 
         {/* Справа: товары выбранной категории */}
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.length === 0 ? (
-            <p className="col-span-full text-center text-gray-500">
-              Товары отсутствуют
-            </p>
-          ) : (
+        <div className="flex-1">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Товары в категории "{category.name}" и подкатегориях
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.length === 0 ? (
+              <p className="col-span-full text-center text-gray-500">
+                Товары отсутствуют
+              </p>
+            ) : (
             products.map((p) => (
               <Link key={p.id} href={`/products/${p.id}`} className="group">
                 <div className="relative rounded-2xl bg-white shadow-lg overflow-hidden cursor-pointer hover:shadow-2xl transition-shadow mx-auto max-w-sm">
@@ -144,7 +187,8 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                 </div>
               </Link>
             ))
-          )}
+            )}
+          </div>
         </div>
       </div>
 
