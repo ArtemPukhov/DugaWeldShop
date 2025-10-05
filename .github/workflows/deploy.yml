@@ -93,47 +93,61 @@ jobs:
             [Unit]
             Description=DugaWeld Backend
             After=network.target
-            
+
             [Service]
             User=${{ secrets.SERVER_USER }}
             WorkingDirectory=$APP_DIR
             ExecStart=/usr/bin/java -jar $APP_DIR/$BACKEND_JAR
+
+            # 🔐 Database
             Environment="DB_URL=${{ secrets.DB_URL }}"
             Environment="DB_USERNAME=${{ secrets.DB_USERNAME }}"
             Environment="DB_PASSWORD=${{ secrets.DB_PASSWORD }}"
+
+            # ☁️ MinIO
+            Environment="MINIO_ENDPOINT=${{ secrets.MINIO_ENDPOINT }}"
+            Environment="MINIO_ACCESS_KEY=${{ secrets.MINIO_ACCESS_KEY }}"
+            Environment="MINIO_SECRET_KEY=${{ secrets.MINIO_SECRET_KEY }}"
+            Environment="MINIO_BUCKET_NAME=${{ secrets.MINIO_BUCKET_NAME }}"
+
+            # JWT и прочие
+            Environment="JWT_SECRET=${{ secrets.JWT_SECRET }}"
+            Environment="JWT_EXPIRATION_MS=${{ secrets.JWT_EXPIRATION_MS }}"
+
             Restart=always
-            
+
             [Install]
             WantedBy=multi-user.target
             EOF
-            
+
             echo "Writing frontend systemd service..."
             sudo tee $FRONTEND_SERVICE > /dev/null <<EOF
             [Unit]
             Description=DugaWeld Frontend (Next.js)
             After=network.target
-            
+
             [Service]
             User=${{ secrets.SERVER_USER }}
             WorkingDirectory=$APP_DIR/$FRONTEND_DIR
             ExecStart=/usr/bin/npm run start
             Restart=always
-            
+
             [Install]
             WantedBy=multi-user.target
             EOF
-            
+
             echo "Cleaning and building frontend on server..."
             cd $APP_DIR/$FRONTEND_DIR
             rm -rf node_modules .next
             npm ci --legacy-peer-deps
             NEXT_IGNORE_ESLINT=1 npm run build
-            
+
             echo "Reloading systemd and starting services..."
             sudo systemctl daemon-reload
             sudo systemctl enable dugaweld
             sudo systemctl enable frontend
             sudo systemctl restart dugaweld
             sudo systemctl restart frontend
-            
-            echo "Deployment finished!"
+
+            echo "✅ Deployment finished!"
+      
