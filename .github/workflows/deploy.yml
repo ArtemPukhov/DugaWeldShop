@@ -110,10 +110,6 @@ jobs:
             Environment="MINIO_SECRET_KEY=${{ secrets.MINIO_SECRET_KEY }}"
             Environment="MINIO_BUCKET_NAME=${{ secrets.MINIO_BUCKET_NAME }}"
 
-            # JWT и прочие
-            Environment="JWT_SECRET=${{ secrets.JWT_SECRET }}"
-            Environment="JWT_EXPIRATION_MS=${{ secrets.JWT_EXPIRATION_MS }}"
-
             Restart=always
 
             [Install]
