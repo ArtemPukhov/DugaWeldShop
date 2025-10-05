@@ -8,6 +8,9 @@ type Category = {
   id?: number;
   name: string;
   description?: string;
+  imageUrl?: string;
+  parentCategoryId?: number;
+  parentCategoryName?: string;
 };
 
 export default function AdminCategoriesPage() {
@@ -15,7 +18,7 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [form, setForm] = useState<Category>({ name: "", description: "" });
+  const [form, setForm] = useState<Category>({ name: "", description: "", imageUrl: "", parentCategoryId: undefined });
   const [editingId, setEditingId] = useState<number | null>(null);
 
   async function fetchCategories() {
@@ -36,7 +39,7 @@ export default function AdminCategoriesPage() {
   }, []);
 
   function resetForm() {
-    setForm({ name: "", description: "" });
+    setForm({ name: "", description: "", imageUrl: "", parentCategoryId: undefined });
     setEditingId(null);
   }
 
@@ -69,7 +72,12 @@ export default function AdminCategoriesPage() {
 
   function startEdit(cat: Category) {
     setEditingId(cat.id!);
-    setForm({ name: cat.name, description: cat.description || "" });
+    setForm({ 
+      name: cat.name, 
+      description: cat.description || "", 
+      imageUrl: cat.imageUrl || "",
+      parentCategoryId: cat.parentCategoryId || undefined
+    });
   }
 
   return (
@@ -84,7 +92,7 @@ export default function AdminCategoriesPage() {
         <div>
           <label className="block text-sm mb-1">Название</label>
           <input
-            className="border rounded px-3 py-2 w-full"
+            className="border rounded px-3 py-2 w-full text-black bg-white"
             value={form.name}
             onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
             required
@@ -93,12 +101,44 @@ export default function AdminCategoriesPage() {
         <div>
           <label className="block text-sm mb-1">Описание</label>
           <textarea
-            className="border rounded px-3 py-2 w-full"
+            className="border rounded px-3 py-2 w-full text-black bg-white"
             value={form.description}
             onChange={(e) =>
               setForm((s) => ({ ...s, description: e.target.value }))
             }
           />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">URL изображения</label>
+          <input
+            type="url"
+            className="border rounded px-3 py-2 w-full text-black bg-white"
+            value={form.imageUrl}
+            onChange={(e) => setForm((s) => ({ ...s, imageUrl: e.target.value }))}
+            placeholder="https://example.com/image.jpg"
+          />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Родительская категория</label>
+          <select
+            className="border rounded px-3 py-2 w-full text-black bg-white"
+            value={form.parentCategoryId || ""}
+            onChange={(e) => setForm((s) => ({ 
+              ...s, 
+              parentCategoryId: e.target.value ? Number(e.target.value) : undefined 
+            }))}
+          >
+            <option value="" className="text-gray-500">
+              Корневая категория (без родителя)
+            </option>
+            {categories
+              .filter(cat => cat.id !== editingId) // Исключаем саму категорию из списка родителей
+              .map((cat) => (
+                <option key={cat.id} value={cat.id} className="text-black">
+                  {cat.parentCategoryName ? `${cat.parentCategoryName} → ${cat.name}` : cat.name}
+                </option>
+              ))}
+          </select>
         </div>
         <div className="flex gap-2">
           <button
@@ -128,6 +168,7 @@ export default function AdminCategoriesPage() {
               <tr className="text-left">
                 <th className="py-2">ID</th>
                 <th>Название</th>
+                <th>Родительская категория</th>
                 <th>Описание</th>
                 <th></th>
               </tr>
@@ -136,7 +177,16 @@ export default function AdminCategoriesPage() {
               {categories.map((c) => (
                 <tr key={c.id} className="border-t">
                   <td className="py-2">{c.id}</td>
-                  <td>{c.name}</td>
+                  <td>
+                    {c.parentCategoryId ? (
+                      <span className="ml-4">↳ {c.name}</span>
+                    ) : (
+                      <span className="font-semibold">{c.name}</span>
+                    )}
+                  </td>
+                  <td className="text-gray-600">
+                    {c.parentCategoryName || "—"}
+                  </td>
                   <td>{c.description}</td>
                   <td className="text-right space-x-2">
                     <button

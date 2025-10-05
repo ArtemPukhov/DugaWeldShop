@@ -49,6 +49,16 @@ public class CategoryController {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/root")
+    public List<CategoryDto> rootCategories() { 
+        return categoryService.findRootCategories(); 
+    }
+
+    @GetMapping("/{parentId}/subcategories")
+    public List<CategoryDto> subcategories(@PathVariable Long parentId) { 
+        return categoryService.findSubcategories(parentId); 
+    }
 }
 
 

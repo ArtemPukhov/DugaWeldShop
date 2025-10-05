@@ -1,0 +1,51 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-add-sample-subcategories
+      author: ai
+      changes:
+        # Добавляем подкатегории для "Сварочные аппараты"
+        - insert:
+            tableName: categories
+            columns:
+              - column:
+                  name: name
+                  value: "Полуавтоматы"
+              - column:
+                  name: description
+                  value: "Полуавтоматические сварочные аппараты MIG/MAG"
+              - column:
+                  name: parent_category_id
+                  valueComputed: "(SELECT id FROM categories WHERE name = 'Сварочные аппараты' LIMIT 1)"
+              - column:
+                  name: image_url
+                  value: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=400&h=300&fit=crop"
+        - insert:
+            tableName: categories
+            columns:
+              - column:
+                  name: name
+                  value: "Инверторы"
+              - column:
+                  name: description
+                  value: "Инверторные сварочные аппараты для ручной дуговой сварки"
+              - column:
+                  name: parent_category_id
+                  valueComputed: "(SELECT id FROM categories WHERE name = 'Сварочные аппараты' LIMIT 1)"
+              - column:
+                  name: image_url
+                  value: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=400&h=300&fit=crop"
+        - insert:
+            tableName: categories
+            columns:
+              - column:
+                  name: name
+                  value: "TIG аппараты"
+              - column:
+                  name: description
+                  value: "Аппараты для аргонодуговой сварки TIG"
+              - column:
+                  name: parent_category_id
+                  valueComputed: "(SELECT id FROM categories WHERE name = 'Сварочные аппараты' LIMIT 1)"
+              - column:
+                  name: image_url
+                  value: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=400&h=300&fit=crop"

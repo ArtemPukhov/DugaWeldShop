@@ -23,6 +23,7 @@ type Product = {
 type Category = {
   id: number;
   name: string;
+  imageUrl?: string;
 };
 
 type FilterState = {

@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-add-image-to-categories
+      author: ai
+      changes:
+        - addColumn:
+            tableName: categories
+            columns:
+              - column:
+                  name: image_url
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: true
+
