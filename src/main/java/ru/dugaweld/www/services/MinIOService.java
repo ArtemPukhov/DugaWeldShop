@@ -105,16 +105,24 @@ public class MinIOService {
      * Удаление файла из MinIO
      */
     public void deleteFile(String fileName) {
+        log.info("Попытка удаления файла '{}' из bucket '{}'", fileName, bucketName);
         try {
+            // Проверяем существование файла перед удалением
+            boolean exists = fileExists(fileName);
+            if (!exists) {
+                log.warn("Файл '{}' не существует в MinIO, пропускаем удаление", fileName);
+                return;
+            }
+            
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucketName)
                             .object(fileName)
                             .build()
             );
-            log.info("Файл '{}' успешно удален из MinIO", fileName);
+            log.info("Файл '{}' успешно удален из MinIO bucket '{}'", fileName, bucketName);
         } catch (Exception e) {
-            log.error("Ошибка при удалении файла '{}' из MinIO: {}", fileName, e.getMessage());
+            log.error("Ошибка при удалении файла '{}' из MinIO bucket '{}': {}", fileName, bucketName, e.getMessage(), e);
             throw new RuntimeException("Не удалось удалить файл из MinIO", e);
         }
     }

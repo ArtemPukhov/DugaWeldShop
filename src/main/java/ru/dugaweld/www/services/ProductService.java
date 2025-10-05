@@ -53,7 +53,8 @@ public class ProductService {
 
     public ProductDto create(ProductDto dto, MultipartFile image) {
         Product product = new Product();
-        dto.setImageUrl(uploadImageToMinIO(image));
+        String fileName = uploadImageToMinIO(image);
+        dto.setImageUrl(fileName); // Сохраняем только имя файла, не полный URL
         apply(dto, product);
         return toDto(productRepository.save(product));
     }
@@ -67,18 +68,38 @@ public class ProductService {
     public void delete(Long id) {
         Product product = productRepository.findById(id).orElseThrow();
         
+        log.info("Удаление товара ID: {}, название: {}", id, product.getName());
+        
         // Удаляем изображение из MinIO, если оно существует
         if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            log.info("Найдено изображение для удаления: {}", product.getImageUrl());
             try {
-                String fileName = extractFileNameFromUrl(product.getImageUrl());
-                minIOService.deleteFile(fileName);
-                log.info("Изображение '{}' удалено из MinIO", fileName);
+                String fileName;
+                
+                // Проверяем, является ли imageUrl полным URL или просто именем файла
+                if (product.getImageUrl().startsWith("http")) {
+                    // Это полный URL, извлекаем имя файла
+                    fileName = extractFileNameFromUrl(product.getImageUrl());
+                } else {
+                    // Это уже имя файла
+                    fileName = product.getImageUrl();
+                }
+                
+                if (fileName != null && !fileName.isEmpty()) {
+                    minIOService.deleteFile(fileName);
+                    log.info("Изображение '{}' успешно удалено из MinIO", fileName);
+                } else {
+                    log.warn("Не удалось определить имя файла для удаления: {}", product.getImageUrl());
+                }
             } catch (Exception e) {
-                log.warn("Не удалось удалить изображение из MinIO: {}", e.getMessage());
+                log.error("Ошибка при удалении изображения из MinIO: {}", e.getMessage(), e);
             }
+        } else {
+            log.info("У товара нет изображения для удаления");
         }
         
         productRepository.deleteById(id);
+        log.info("Товар ID: {} удален из базы данных", id);
     }
 
     private void apply(ProductDto dto, Product entity) {
@@ -96,7 +117,26 @@ public class ProductService {
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
-        dto.setImageUrl(product.getImageUrl());
+        
+        // Если imageUrl содержит только имя файла, генерируем полный URL
+        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            if (product.getImageUrl().startsWith("http")) {
+                // Это уже полный URL (для обратной совместимости)
+                dto.setImageUrl(product.getImageUrl());
+            } else {
+                // Это имя файла, генерируем полный URL
+                try {
+                    String fullUrl = minIOService.getFileUrl(product.getImageUrl());
+                    dto.setImageUrl(fullUrl);
+                } catch (Exception e) {
+                    log.warn("Не удалось сгенерировать URL для файла '{}': {}", product.getImageUrl(), e.getMessage());
+                    dto.setImageUrl(product.getImageUrl()); // Возвращаем имя файла как есть
+                }
+            }
+        } else {
+            dto.setImageUrl(null);
+        }
+        
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
         return dto;
     }
@@ -111,9 +151,8 @@ public class ProductService {
         
         try {
             String fileName = minIOService.uploadFile(image);
-            String fileUrl = minIOService.getFileUrl(fileName);
             log.info("Изображение загружено в MinIO: {}", fileName);
-            return fileUrl;
+            return fileName; // Возвращаем только имя файла
         } catch (Exception e) {
             log.error("Ошибка при загрузке изображения в MinIO: {}", e.getMessage());
             throw new RuntimeException("Не удалось загрузить изображение", e);
@@ -128,12 +167,67 @@ public class ProductService {
             return null;
         }
         
-        // Извлекаем имя файла из URL
-        // Например: "http://localhost:9000/dugaweld-images/uuid.jpg" -> "uuid.jpg"
-        String[] parts = url.split("/");
-        return parts[parts.length - 1];
+        try {
+            // Удаляем query параметры (presigned URL)
+            String urlWithoutParams = url.split("\\?")[0];
+            
+            // Извлекаем имя файла из URL
+            // Например: "http://localhost:9000/dugaweld-images/uuid.jpg" -> "uuid.jpg"
+            String[] parts = urlWithoutParams.split("/");
+            String fileName = parts[parts.length - 1];
+            
+            // Проверяем, что извлеченное имя файла не пустое и не содержит недопустимых символов
+            if (fileName == null || fileName.isEmpty()) {
+                log.warn("Не удалось извлечь имя файла из URL: {}", url);
+                return null;
+            }
+            
+            // Дополнительная проверка на наличие расширения файла
+            if (!fileName.contains(".")) {
+                log.warn("Извлеченное имя файла '{}' не содержит расширения из URL: {}", fileName, url);
+                return null;
+            }
+            
+            log.info("Извлечено имя файла '{}' из URL: {}", fileName, url);
+            return fileName;
+        } catch (Exception e) {
+            log.error("Ошибка при извлечении имени файла из URL '{}': {}", url, e.getMessage(), e);
+            return null;
+        }
     }
     
+    /**
+     * Очистка presigned URL в базе данных (миграция)
+     * Заменяет полные URL на имена файлов
+     */
+    public void cleanupPresignedUrls() {
+        log.info("Начинаем очистку presigned URL в базе данных");
+        
+        List<Product> products = productRepository.findAll();
+        int updatedCount = 0;
+        
+        for (Product product : products) {
+            if (product.getImageUrl() != null && 
+                product.getImageUrl().startsWith("http") && 
+                product.getImageUrl().contains("?")) {
+                
+                String fileName = extractFileNameFromUrl(product.getImageUrl());
+                if (fileName != null && !fileName.isEmpty()) {
+                    log.info("Обновляем товар ID: {} - заменяем URL '{}' на имя файла '{}'", 
+                            product.getId(), product.getImageUrl(), fileName);
+                    product.setImageUrl(fileName);
+                    productRepository.save(product);
+                    updatedCount++;
+                } else {
+                    log.warn("Не удалось извлечь имя файла из URL товара ID: {} - {}", 
+                            product.getId(), product.getImageUrl());
+                }
+            }
+        }
+        
+        log.info("Очистка завершена. Обновлено товаров: {}", updatedCount);
+    }
+
     /**
      * Legacy метод для загрузки в файловую систему (для совместимости)
      */

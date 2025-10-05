@@ -83,6 +83,19 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/cleanup-presigned-urls")
+//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<String> cleanupPresignedUrls() {
+        try {
+            productService.cleanupPresignedUrls();
+            return ResponseEntity.ok("Очистка presigned URL завершена успешно");
+        } catch (Exception e) {
+            log.error("Ошибка при очистке presigned URL: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                    .body("Ошибка при очистке presigned URL: " + e.getMessage());
+        }
+    }
+
     @PostMapping(value = "/preview-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> previewCsv(@RequestParam("file") MultipartFile csvFile) {
         try {
