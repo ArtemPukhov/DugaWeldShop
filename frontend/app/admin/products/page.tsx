@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { apiFetch, apiFetchForm, apiFetchJSON } from "@/lib/api";
 import AdminTopBar from "@/components/AdminTopBar";
+import { CsvImport } from "@/components/CsvImport";
 
-type Category = { id: number; name: string };
+type Category = { id: number; name: string; imageUrl?: string; };
 type Product = {
   id?: number;
   name: string;
@@ -128,6 +129,8 @@ export default function AdminProductsPage() {
 
       {error && <div className="text-red-600">{error}</div>}
 
+      <CsvImport onImportComplete={fetchData} />
+
       <form
         onSubmit={isEditing ? handleSave : handleCreate}
         className="space-y-3 border p-4 rounded"
@@ -136,7 +139,7 @@ export default function AdminProductsPage() {
           <div>
             <label className="block text-sm mb-1">Название</label>
             <input
-              className="border rounded px-3 py-2 w-full"
+              className="border rounded px-3 py-2 w-full text-black bg-white"
               value={form.name}
               onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
               required
@@ -147,7 +150,7 @@ export default function AdminProductsPage() {
             <input
               type="number"
               step="0.01"
-              className="border rounded px-3 py-2 w-full"
+              className="border rounded px-3 py-2 w-full text-black bg-white"
               value={form.price}
               onChange={(e) =>
                 setForm((s) => ({ ...s, price: Number(e.target.value) }))
@@ -158,7 +161,7 @@ export default function AdminProductsPage() {
           <div className="md:col-span-2">
             <label className="block text-sm mb-1">Описание</label>
             <textarea
-              className="border rounded px-3 py-2 w-full"
+              className="border rounded px-3 py-2 w-full text-black bg-white"
               value={form.description}
               onChange={(e) =>
                 setForm((s) => ({ ...s, description: e.target.value }))
@@ -168,18 +171,18 @@ export default function AdminProductsPage() {
           <div>
             <label className="block text-sm mb-1">Категория</label>
             <select
-              className="border rounded px-3 py-2 w-full"
+              className="border rounded px-3 py-2 w-full text-black bg-white"
               value={form.categoryId}
               onChange={(e) =>
                 setForm((s) => ({ ...s, categoryId: Number(e.target.value) }))
               }
               required
             >
-              <option value={0} disabled>
+              <option value={0} disabled className="text-gray-500">
                 Выберите категорию
               </option>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>
+                <option key={c.id} value={c.id} className="text-black">
                   {c.name}
                 </option>
               ))}

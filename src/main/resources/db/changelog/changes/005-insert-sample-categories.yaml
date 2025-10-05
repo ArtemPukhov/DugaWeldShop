@@ -1,0 +1,54 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-insert-sample-categories
+      author: ai
+      changes:
+        - insert:
+            tableName: categories
+            columns:
+              - column:
+                  name: name
+                  value: "Сварочные аппараты"
+              - column:
+                  name: description
+                  value: "Профессиональные сварочные аппараты для различных типов сварки"
+              - column:
+                  name: image_url
+                  value: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?w=400&h=300&fit=crop"
+        - insert:
+            tableName: categories
+            columns:
+              - column:
+                  name: name
+                  value: "Электроды"
+              - column:
+                  name: description
+                  value: "Качественные электроды для всех видов сварочных работ"
+              - column:
+                  name: image_url
+                  value: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop"
+        - insert:
+            tableName: categories
+            columns:
+              - column:
+                  name: name
+                  value: "Защитное оборудование"
+              - column:
+                  name: description
+                  value: "Маски, перчатки и другое защитное оборудование для сварщиков"
+              - column:
+                  name: image_url
+                  value: "https://images.unsplash.com/photo-1581093458791-9d42e1b2b6d9?w=400&h=300&fit=crop"
+        - insert:
+            tableName: categories
+            columns:
+              - column:
+                  name: name
+                  value: "Расходные материалы"
+              - column:
+                  name: description
+                  value: "Проволока, флюсы и другие расходные материалы"
+              - column:
+                  name: image_url
+                  value: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=400&h=300&fit=crop"
+
