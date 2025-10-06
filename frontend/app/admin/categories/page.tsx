@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch, apiFetchJSON } from "@/lib/api";
+import { getCategoryImageUrl, handleImageError } from "@/lib/imageUtils";
 import AdminTopBar from "@/components/AdminTopBar";
 
 type Category = {
@@ -152,9 +153,10 @@ export default function AdminCategoriesPage() {
               <p className="text-sm text-gray-600 mb-2">Текущее изображение:</p>
               <div className="flex items-center gap-2">
                 <img 
-                  src={form.imageUrl.startsWith('http') ? form.imageUrl : `http://localhost:8080/api/files/${form.imageUrl}`} 
+                  src={getCategoryImageUrl(form.imageUrl)} 
                   alt="Текущее изображение"
                   className="w-20 h-20 object-cover rounded border"
+                  onError={handleImageError}
                 />
                 <button
                   type="button"
@@ -237,9 +239,10 @@ export default function AdminCategoriesPage() {
                   <td className="py-2">
                     {c.imageUrl ? (
                       <img 
-                        src={c.imageUrl.startsWith('http') ? c.imageUrl : `http://localhost:8080/api/files/${c.imageUrl}`} 
+                        src={getCategoryImageUrl(c.imageUrl)} 
                         alt={c.name}
                         className="w-12 h-12 object-cover rounded"
+                        onError={handleImageError}
                       />
                     ) : (
                       <span className="text-gray-400">—</span>
