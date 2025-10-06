@@ -17,7 +17,7 @@ export function ProductCard({ product }: { product: Product }) {
       {/* Картинка */}
       <div className="h-64 w-full overflow-hidden">
         <img
-          src={product.imageUrl || "/placeholder.png"}
+          src={product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:8080/api/files/${product.imageUrl}`) : "/placeholder.png"}
           alt={product.name}
           className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
         />
