@@ -134,17 +134,19 @@ export default function ProductPage() {
               </div>
             </div>
 
-            <div className="mt-6 border-t border-gray-200 pt-6">
-              {product.description && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Описание</h3>
-                  <p className="text-gray-600">{product.description}</p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
+
+      {/* Описание товара - теперь снизу и на всю ширину страницы */}
+      {product.description && (
+        <div className="bg-white border-t border-gray-200 py-8">
+          <div className="max-w-6xl mx-auto px-4">
+            <h3 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Описание</h3>
+            <p className="text-gray-600 text-lg leading-relaxed text-justify max-w-4xl mx-auto">{product.description}</p>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <Footer />

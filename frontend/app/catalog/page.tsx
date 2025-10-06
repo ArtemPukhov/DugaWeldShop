@@ -325,7 +325,7 @@ export default function CatalogPage() {
                       </Link>
 
                       {product.description && (
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2 text-justify">
                           {product.description}
                         </p>
                       )}
