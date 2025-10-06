@@ -39,7 +39,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/products/**",
-                                "/categories/**"
+                                "/categories/**",
+                                "/api/files/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/**").permitAll()
