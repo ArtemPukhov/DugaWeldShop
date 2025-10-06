@@ -309,11 +309,11 @@ export default function CatalogPage() {
                 {filteredProducts.map((product) => (
                   <div key={product.id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <Link href={`/products/${product.id}`}>
-                      <div className="h-48 bg-gray-100 overflow-hidden">
+                      <div className="h-48 bg-gray-100 overflow-hidden image-container">
                         <img
                           src={getProductImageUrl(product.imageUrl)}
                           alt={product.name}
-                          className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                          className="product-image"
                           onError={handleImageError}
                         />
                       </div>
