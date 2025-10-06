@@ -233,3 +233,5 @@ docker-compose exec minio mc admin info
 
 
 
+
+

@@ -102,6 +102,54 @@ public class ProductService {
         log.info("Товар ID: {} удален из базы данных", id);
     }
 
+    public int deleteBulk(List<Long> ids) {
+        log.info("Начинаем массовое удаление {} товаров", ids.size());
+        int deletedCount = 0;
+        
+        for (Long id : ids) {
+            try {
+                Product product = productRepository.findById(id).orElse(null);
+                if (product != null) {
+                    log.info("Удаление товара ID: {}, название: {}", id, product.getName());
+                    
+                    // Удаляем изображение из MinIO, если оно существует
+                    if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+                        try {
+                            String fileName;
+                            
+                            // Проверяем, является ли imageUrl полным URL или просто именем файла
+                            if (product.getImageUrl().startsWith("http")) {
+                                // Это полный URL, извлекаем имя файла
+                                fileName = extractFileNameFromUrl(product.getImageUrl());
+                            } else {
+                                // Это уже имя файла
+                                fileName = product.getImageUrl();
+                            }
+                            
+                            if (fileName != null && !fileName.isEmpty()) {
+                                minIOService.deleteFile(fileName);
+                                log.info("Изображение '{}' успешно удалено из MinIO", fileName);
+                            }
+                        } catch (Exception e) {
+                            log.error("Ошибка при удалении изображения товара {}: {}", id, e.getMessage());
+                        }
+                    }
+                    
+                    productRepository.deleteById(id);
+                    deletedCount++;
+                    log.info("Товар ID: {} удален из базы данных", id);
+                } else {
+                    log.warn("Товар с ID {} не найден", id);
+                }
+            } catch (Exception e) {
+                log.error("Ошибка при удалении товара ID {}: {}", id, e.getMessage());
+            }
+        }
+        
+        log.info("Массовое удаление завершено. Удалено товаров: {}", deletedCount);
+        return deletedCount;
+    }
+
     private void apply(ProductDto dto, Product entity) {
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());

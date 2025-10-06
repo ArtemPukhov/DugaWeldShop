@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { apiPreviewCsv, apiImportCsv } from "@/lib/api";
+import { useState, useEffect } from "react";
+import { apiPreviewCsv, apiImportCsv, apiImportCsvWithCategory, apiFetch } from "@/lib/api";
 
 interface CsvImportProps {
   onImportComplete?: (count: number) => void;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  description?: string;
+  parentCategoryId?: number;
 }
 
 interface PreviewData {
@@ -29,6 +36,22 @@ export function CsvImport({ onImportComplete }: CsvImportProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [showMapping, setShowMapping] = useState(false);
   const [columnMappings, setColumnMappings] = useState<ColumnMapping[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [useTargetCategory, setUseTargetCategory] = useState(false);
+
+  // Загружаем категории при монтировании компонента
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const categoriesData = await apiFetch<Category[]>("/categories");
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error("Ошибка загрузки категорий:", err);
+      }
+    };
+    loadCategories();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -82,14 +105,29 @@ export function CsvImport({ onImportComplete }: CsvImportProps) {
       return;
     }
 
+    if (useTargetCategory && !selectedCategoryId) {
+      setError("Пожалуйста, выберите категорию для импорта");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setMessage("");
 
     try {
-      const result = await apiImportCsv(file);
-      setMessage(`Успешно импортировано ${result.importedCount} товаров`);
+      let result;
+      if (useTargetCategory && selectedCategoryId) {
+        result = await apiImportCsvWithCategory(file, selectedCategoryId);
+        const selectedCategory = categories.find(c => c.id === selectedCategoryId);
+        setMessage(`Успешно импортировано ${result.importedCount} товаров в категорию "${selectedCategory?.name || selectedCategoryId}"`);
+      } else {
+        result = await apiImportCsv(file);
+        setMessage(`Успешно импортировано ${result.importedCount} товаров`);
+      }
+      
       setFile(null);
+      setUseTargetCategory(false);
+      setSelectedCategoryId(null);
       if (onImportComplete) {
         onImportComplete(result.importedCount);
       }
@@ -147,6 +185,43 @@ export function CsvImport({ onImportComplete }: CsvImportProps) {
         {file && (
           <div className="text-sm text-gray-600">
             Выбран файл: {file.name} ({(file.size / 1024).toFixed(1)} KB)
+          </div>
+        )}
+
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={useTargetCategory}
+              onChange={(e) => setUseTargetCategory(e.target.checked)}
+              className="mr-2"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Импортировать все товары в одну категорию
+            </span>
+          </label>
+        </div>
+
+        {useTargetCategory && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Выберите категорию для импорта
+            </label>
+            <select
+              value={selectedCategoryId || ""}
+              onChange={(e) => setSelectedCategoryId(e.target.value ? parseInt(e.target.value) : null)}
+              className="block w-full border border-gray-300 rounded-md px-3 py-2 text-black bg-white"
+            >
+              <option value="">Выберите категорию</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Все товары из CSV будут импортированы в выбранную категорию, независимо от категорий в файле
+            </p>
           </div>
         )}
 
@@ -271,8 +346,14 @@ export function CsvImport({ onImportComplete }: CsvImportProps) {
             <li>name - название товара (обязательно)</li>
             <li>description - описание товара</li>
             <li>price - цена (число, обязательно)</li>
-            <li>categoryId - ID категории (число, обязательно)</li>
+            <li>categoryId - ID категории (число, обязательно, игнорируется при выборе целевой категории)</li>
             <li>imageUrl - URL изображения (необязательно)</li>
+          </ul>
+          <p className="font-medium mt-3 mb-2">Особенности:</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>При включении опции "Импортировать все товары в одну категорию" поле categoryId из CSV игнорируется</li>
+            <li>Все товары будут добавлены в выбранную категорию</li>
+            <li>Без этой опции используются категории, указанные в CSV файле</li>
           </ul>
         </div>
       </div>

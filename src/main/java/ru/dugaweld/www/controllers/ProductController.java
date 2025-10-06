@@ -83,6 +83,25 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/bulk")
+//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> deleteBulk(@RequestBody List<Long> ids) {
+        try {
+            if (ids == null || ids.isEmpty()) {
+                return ResponseEntity.badRequest().body("Список ID не может быть пустым");
+            }
+            
+            int deletedCount = productService.deleteBulk(ids);
+            return ResponseEntity.ok(java.util.Map.of(
+                "message", "Удаление завершено",
+                "deletedCount", deletedCount
+            ));
+        } catch (Exception e) {
+            log.error("Ошибка при массовом удалении товаров", e);
+            return ResponseEntity.internalServerError().body("Ошибка при удалении: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/cleanup-presigned-urls")
 //    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<String> cleanupPresignedUrls() {
@@ -98,6 +117,7 @@ public class ProductController {
 
     @PostMapping(value = "/preview-csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> previewCsv(@RequestParam("file") MultipartFile csvFile) {
+        log.info("Получен запрос на предзагрузку CSV файла: {}", csvFile.getOriginalFilename());
         try {
             if (csvFile.isEmpty()) {
                 return ResponseEntity.badRequest().body("Файл не выбран");
@@ -108,11 +128,13 @@ public class ProductController {
                 return ResponseEntity.badRequest().body("Файл должен иметь расширение .csv");
             }
             
+            log.info("Начинаем парсинг CSV файла для предзагрузки");
             List<CsvProductDto> previewData = csvProductService.parseCsvFile(csvFile);
             
             // Получаем заголовки из первой строки файла
             String[] csvHeaders = csvProductService.getCsvHeaders(csvFile);
             
+            log.info("Предзагрузка завершена. Найдено {} товаров", previewData.size());
             return ResponseEntity.ok(java.util.Map.of(
                 "csvHeaders", csvHeaders,
                 "targetFields", new String[]{"name", "description", "price", "categoryId", "imageUrl"},
@@ -146,6 +168,42 @@ public class ProductController {
             return ResponseEntity.ok(java.util.Map.of(
                 "message", "Импорт завершен успешно",
                 "importedCount", importedProducts.size(),
+                "products", importedProducts
+            ));
+            
+        } catch (IOException e) {
+            log.error("Ошибка при чтении CSV файла", e);
+            return ResponseEntity.badRequest().body("Ошибка при чтении файла: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Ошибка при импорте товаров", e);
+            return ResponseEntity.internalServerError().body("Ошибка при импорте: " + e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/import-csv-with-category", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> importFromCsvWithCategory(
+            @RequestParam("file") MultipartFile csvFile,
+            @RequestParam("targetCategoryId") Long targetCategoryId) {
+        try {
+            if (csvFile.isEmpty()) {
+                return ResponseEntity.badRequest().body("Файл не выбран");
+            }
+            
+            String filename = csvFile.getOriginalFilename();
+            if (filename == null || !filename.toLowerCase().endsWith(".csv")) {
+                return ResponseEntity.badRequest().body("Файл должен иметь расширение .csv");
+            }
+            
+            if (targetCategoryId == null) {
+                return ResponseEntity.badRequest().body("ID целевой категории не указан");
+            }
+            
+            List<ProductDto> importedProducts = csvProductService.importProductsFromCsv(csvFile, targetCategoryId);
+            
+            return ResponseEntity.ok(java.util.Map.of(
+                "message", "Импорт завершен успешно",
+                "importedCount", importedProducts.size(),
+                "targetCategoryId", targetCategoryId,
                 "products", importedProducts
             ));
             

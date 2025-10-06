@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, apiFetchForm, apiFetchJSON } from "@/lib/api";
+import { apiFetch, apiFetchForm, apiFetchJSON, apiDeleteProductsBulk } from "@/lib/api";
 import AdminTopBar from "@/components/AdminTopBar";
 import { CsvImport } from "@/components/CsvImport";
 
@@ -29,6 +29,7 @@ export default function AdminProductsPage() {
   });
   const [image, setImage] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
 
   async function fetchData() {
     setLoading(true);
@@ -104,6 +105,45 @@ export default function AdminProductsPage() {
     } catch (e: any) {
       setError(e.message || "Ошибка удаления");
     }
+  }
+
+  async function handleBulkDelete() {
+    if (selectedProducts.length === 0) {
+      setError("Выберите товары для удаления");
+      return;
+    }
+    
+    if (!confirm(`Удалить ${selectedProducts.length} товаров?`)) return;
+    
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await apiDeleteProductsBulk(selectedProducts);
+      setSelectedProducts([]);
+      await fetchData();
+      setError(null);
+    } catch (e: any) {
+      setError(e.message || "Ошибка массового удаления");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function toggleProductSelection(id: number) {
+    setSelectedProducts(prev => 
+      prev.includes(id) 
+        ? prev.filter(productId => productId !== id)
+        : [...prev, id]
+    );
+  }
+
+  function selectAllProducts() {
+    const allProductIds = products.map(p => p.id!).filter(Boolean);
+    setSelectedProducts(allProductIds);
+  }
+
+  function clearSelection() {
+    setSelectedProducts([]);
   }
 
   function startEdit(p: Product) {
@@ -220,13 +260,44 @@ export default function AdminProductsPage() {
       </form>
 
       <div>
+        {selectedProducts.length > 0 && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+            <div className="flex items-center justify-between">
+              <span className="text-blue-800">
+                Выбрано товаров: {selectedProducts.length}
+              </span>
+              <div className="space-x-2">
+                <button
+                  onClick={clearSelection}
+                  className="px-3 py-1 text-sm border border-blue-300 text-blue-700 rounded hover:bg-blue-100"
+                >
+                  Очистить выбор
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Удалить выбранные
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div>Загрузка...</div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left">
-                <th className="py-2">ID</th>
+                <th className="py-2 w-12">
+                  <input
+                    type="checkbox"
+                    checked={selectedProducts.length === products.length && products.length > 0}
+                    onChange={selectedProducts.length === products.length ? clearSelection : selectAllProducts}
+                    className="rounded"
+                  />
+                </th>
                 <th>Название</th>
                 <th>Цена</th>
                 <th>Категория</th>
@@ -236,7 +307,14 @@ export default function AdminProductsPage() {
             <tbody>
               {products.map((p) => (
                 <tr key={p.id} className="border-t">
-                  <td className="py-2">{p.id}</td>
+                  <td className="py-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedProducts.includes(p.id!)}
+                      onChange={() => p.id && toggleProductSelection(p.id)}
+                      className="rounded"
+                    />
+                  </td>
                   <td>{p.name}</td>
                   <td>{p.price}</td>
                   <td>

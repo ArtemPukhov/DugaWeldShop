@@ -10,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CsvImportRequest {
     private List<ColumnMappingDto> columnMappings;
+    private Long targetCategoryId; // ID категории для всех товаров из CSV
 }
 
 

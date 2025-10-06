@@ -111,6 +111,17 @@ export async function apiImportCsv(file: File): Promise<{ message: string; impor
   return apiFetchForm("/products/import-csv", formData);
 }
 
+export async function apiImportCsvWithCategory(file: File, targetCategoryId: number): Promise<{ message: string; importedCount: number; targetCategoryId: number; products: any[] }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("targetCategoryId", targetCategoryId.toString());
+  return apiFetchForm("/products/import-csv-with-category", formData);
+}
+
+export async function apiDeleteProductsBulk(ids: number[]): Promise<{ message: string; deletedCount: number }> {
+  return apiFetchJSON("/products/bulk", "DELETE", ids);
+}
+
 export function saveToken(token: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem("dw_admin_token", token);
