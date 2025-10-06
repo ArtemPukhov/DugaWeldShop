@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { apiFetch, apiFetchJSON } from "@/lib/api";
 import { getCategoryImageUrl, handleImageError } from "@/lib/imageUtils";
 import AdminTopBar from "@/components/AdminTopBar";
+import ImageUploader from "@/components/ImageUploader";
 
 type Category = {
   id?: number;
@@ -136,38 +137,12 @@ export default function AdminCategoriesPage() {
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">Изображение</label>
-          <input
-            type="file"
-            accept="image/*"
-            className="border rounded px-3 py-2 w-full text-black bg-white"
-            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+          <ImageUploader
+            onFileSelect={setImageFile}
+            currentImageUrl={form.imageUrl ? getCategoryImageUrl(form.imageUrl) : undefined}
+            type="category"
+            onRemoveCurrentImage={() => setForm(s => ({ ...s, imageUrl: "" }))}
           />
-          {imageFile && (
-            <p className="text-sm text-green-600 mt-1">
-              Выбран файл: {imageFile.name}
-            </p>
-          )}
-          {form.imageUrl && !imageFile && (
-            <div className="mt-2">
-              <p className="text-sm text-gray-600 mb-2">Текущее изображение:</p>
-              <div className="flex items-center gap-2">
-                <img 
-                  src={getCategoryImageUrl(form.imageUrl)} 
-                  alt="Текущее изображение"
-                  className="w-20 h-20 object-cover rounded border"
-                  onError={handleImageError}
-                />
-                <button
-                  type="button"
-                  className="text-sm text-red-600 underline"
-                  onClick={() => setForm(s => ({ ...s, imageUrl: "" }))}
-                >
-                  Удалить изображение
-                </button>
-              </div>
-            </div>
-          )}
         </div>
         <div>
           <label className="block text-sm mb-1">Родительская категория</label>
@@ -238,12 +213,14 @@ export default function AdminCategoriesPage() {
                   </td>
                   <td className="py-2">
                     {c.imageUrl ? (
-                      <img 
-                        src={getCategoryImageUrl(c.imageUrl)} 
-                        alt={c.name}
-                        className="w-12 h-12 object-cover rounded"
-                        onError={handleImageError}
-                      />
+                      <div className="w-12 h-12 image-container rounded overflow-hidden">
+                        <img 
+                          src={getCategoryImageUrl(c.imageUrl)} 
+                          alt={c.name}
+                          className="thumbnail-image"
+                          onError={handleImageError}
+                        />
+                      </div>
                     ) : (
                       <span className="text-gray-400">—</span>
                     )}

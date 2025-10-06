@@ -46,11 +46,11 @@ export default function CategoryHierarchy({ category }: CategoryHierarchyProps) 
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
       <Link href={`/categories/${category.id}`}>
-        <div className="h-48 overflow-hidden bg-gradient-to-br from-yellow-100 to-orange-100">
+        <div className="h-48 overflow-hidden bg-gradient-to-br from-yellow-100 to-orange-100 image-container">
           <img
             src={getCategoryImageUrl(category.imageUrl)}
             alt={category.name}
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+            className="category-image"
             onError={handleImageError}
           />
         </div>
@@ -107,11 +107,11 @@ export default function CategoryHierarchy({ category }: CategoryHierarchyProps) 
                   href={`/categories/${sub.id}`}
                   className="flex items-center p-2 rounded-lg hover:bg-gray-50 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
+                  <div className="w-8 h-8 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden image-container">
                     <img
                       src={getCategoryImageUrl(sub.imageUrl)}
                       alt={sub.name}
-                      className="w-full h-full object-cover"
+                      className="thumbnail-image"
                       onError={handleImageError}
                     />
                   </div>
