@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { getCategoryImageUrl, handleImageError } from "@/lib/imageUtils";
 
 type Category = {
   id: number;
@@ -47,9 +48,10 @@ export default function CategoryHierarchy({ category }: CategoryHierarchyProps) 
       <Link href={`/categories/${category.id}`}>
         <div className="h-48 overflow-hidden bg-gradient-to-br from-yellow-100 to-orange-100">
           <img
-            src={category.imageUrl ? (category.imageUrl.startsWith('http') ? category.imageUrl : `http://localhost:8080/api/files/${category.imageUrl}`) : "/placeholder.png"}
+            src={getCategoryImageUrl(category.imageUrl)}
             alt={category.name}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+            onError={handleImageError}
           />
         </div>
       </Link>
@@ -107,9 +109,10 @@ export default function CategoryHierarchy({ category }: CategoryHierarchyProps) 
                 >
                   <div className="w-8 h-8 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
                     <img
-                      src={sub.imageUrl ? (sub.imageUrl.startsWith('http') ? sub.imageUrl : `http://localhost:8080/api/files/${sub.imageUrl}`) : "/placeholder.png"}
+                      src={getCategoryImageUrl(sub.imageUrl)}
                       alt={sub.name}
                       className="w-full h-full object-cover"
+                      onError={handleImageError}
                     />
                   </div>
                   <div className="flex-1 min-w-0">

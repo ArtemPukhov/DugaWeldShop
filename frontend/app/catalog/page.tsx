@@ -6,6 +6,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { getProductImageUrl, handleImageError } from "@/lib/imageUtils";
 
 type Product = {
   id: number;
@@ -310,9 +311,10 @@ export default function CatalogPage() {
                     <Link href={`/products/${product.id}`}>
                       <div className="h-48 bg-gray-100 overflow-hidden">
                         <img
-                          src={product.imageUrl ? (product.imageUrl.startsWith('http') ? product.imageUrl : `http://localhost:8080/api/files/${product.imageUrl}`) : "/placeholder.png"}
+                          src={getProductImageUrl(product.imageUrl)}
                           alt={product.name}
                           className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                          onError={handleImageError}
                         />
                       </div>
                     </Link>
