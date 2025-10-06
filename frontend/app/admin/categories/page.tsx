@@ -20,6 +20,7 @@ export default function AdminCategoriesPage() {
 
   const [form, setForm] = useState<Category>({ name: "", description: "", imageUrl: "", parentCategoryId: undefined });
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   async function fetchCategories() {
     setLoading(true);
@@ -41,6 +42,7 @@ export default function AdminCategoriesPage() {
   function resetForm() {
     setForm({ name: "", description: "", imageUrl: "", parentCategoryId: undefined });
     setEditingId(null);
+    setImageFile(null);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -48,9 +50,32 @@ export default function AdminCategoriesPage() {
     setError(null);
     try {
       if (editingId) {
-        await apiFetchJSON(`/categories/${editingId}`, "PUT", form);
+        // Для редактирования используем FormData если есть новое изображение
+        if (imageFile) {
+          const fd = new FormData();
+          fd.append("name", form.name);
+          fd.append("description", form.description || "");
+          fd.append("parentCategoryId", String(form.parentCategoryId || ""));
+          fd.append("image", imageFile);
+          
+          await apiFetch(`/categories/${editingId}`, { method: "PUT", body: fd });
+        } else {
+          // Если нет нового изображения, используем JSON
+          await apiFetchJSON(`/categories/${editingId}`, "PUT", form);
+        }
       } else {
-        await apiFetchJSON(`/categories`, "POST", form);
+        // Для создания используем FormData если есть изображение
+        if (imageFile) {
+          const fd = new FormData();
+          fd.append("name", form.name);
+          fd.append("description", form.description || "");
+          fd.append("parentCategoryId", String(form.parentCategoryId || ""));
+          fd.append("image", imageFile);
+          
+          await apiFetch(`/categories`, { method: "POST", body: fd });
+        } else {
+          await apiFetchJSON(`/categories`, "POST", form);
+        }
       }
       resetForm();
       await fetchCategories();
@@ -78,6 +103,7 @@ export default function AdminCategoriesPage() {
       imageUrl: cat.imageUrl || "",
       parentCategoryId: cat.parentCategoryId || undefined
     });
+    setImageFile(null);
   }
 
   return (
@@ -109,14 +135,37 @@ export default function AdminCategoriesPage() {
           />
         </div>
         <div>
-          <label className="block text-sm mb-1">URL изображения</label>
+          <label className="block text-sm mb-1">Изображение</label>
           <input
-            type="url"
+            type="file"
+            accept="image/*"
             className="border rounded px-3 py-2 w-full text-black bg-white"
-            value={form.imageUrl}
-            onChange={(e) => setForm((s) => ({ ...s, imageUrl: e.target.value }))}
-            placeholder="https://example.com/image.jpg"
+            onChange={(e) => setImageFile(e.target.files?.[0] || null)}
           />
+          {imageFile && (
+            <p className="text-sm text-green-600 mt-1">
+              Выбран файл: {imageFile.name}
+            </p>
+          )}
+          {form.imageUrl && !imageFile && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-600 mb-2">Текущее изображение:</p>
+              <div className="flex items-center gap-2">
+                <img 
+                  src={form.imageUrl.startsWith('http') ? form.imageUrl : `http://localhost:8080/api/files/${form.imageUrl}`} 
+                  alt="Текущее изображение"
+                  className="w-20 h-20 object-cover rounded border"
+                />
+                <button
+                  type="button"
+                  className="text-sm text-red-600 underline"
+                  onClick={() => setForm(s => ({ ...s, imageUrl: "" }))}
+                >
+                  Удалить изображение
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-sm mb-1">Родительская категория</label>
@@ -168,6 +217,7 @@ export default function AdminCategoriesPage() {
               <tr className="text-left">
                 <th className="py-2">ID</th>
                 <th>Название</th>
+                <th>Изображение</th>
                 <th>Родительская категория</th>
                 <th>Описание</th>
                 <th></th>
@@ -182,6 +232,17 @@ export default function AdminCategoriesPage() {
                       <span className="ml-4">↳ {c.name}</span>
                     ) : (
                       <span className="font-semibold">{c.name}</span>
+                    )}
+                  </td>
+                  <td className="py-2">
+                    {c.imageUrl ? (
+                      <img 
+                        src={c.imageUrl.startsWith('http') ? c.imageUrl : `http://localhost:8080/api/files/${c.imageUrl}`} 
+                        alt={c.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                    ) : (
+                      <span className="text-gray-400">—</span>
                     )}
                   </td>
                   <td className="text-gray-600">

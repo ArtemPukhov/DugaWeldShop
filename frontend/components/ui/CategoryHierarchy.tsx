@@ -47,7 +47,7 @@ export default function CategoryHierarchy({ category }: CategoryHierarchyProps) 
       <Link href={`/categories/${category.id}`}>
         <div className="h-48 overflow-hidden bg-gradient-to-br from-yellow-100 to-orange-100">
           <img
-            src={category.imageUrl || "/placeholder.png"}
+            src={category.imageUrl ? (category.imageUrl.startsWith('http') ? category.imageUrl : `http://localhost:8080/api/files/${category.imageUrl}`) : "/placeholder.png"}
             alt={category.name}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
           />
@@ -107,7 +107,7 @@ export default function CategoryHierarchy({ category }: CategoryHierarchyProps) 
                 >
                   <div className="w-8 h-8 bg-gray-200 rounded flex-shrink-0 mr-3 overflow-hidden">
                     <img
-                      src={sub.imageUrl || "/placeholder.png"}
+                      src={sub.imageUrl ? (sub.imageUrl.startsWith('http') ? sub.imageUrl : `http://localhost:8080/api/files/${sub.imageUrl}`) : "/placeholder.png"}
                       alt={sub.name}
                       className="w-full h-full object-cover"
                     />
