@@ -6,6 +6,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { getProductImageUrl, handleImageError } from "@/lib/imageUtils";
 
 type Product = {
   id: number;
@@ -308,11 +309,12 @@ export default function CatalogPage() {
                 {filteredProducts.map((product) => (
                   <div key={product.id} className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <Link href={`/products/${product.id}`}>
-                      <div className="h-48 bg-gray-100 overflow-hidden">
+                      <div className="h-48 bg-gray-100 overflow-hidden image-container">
                         <img
-                          src={product.imageUrl || "/placeholder.png"}
+                          src={getProductImageUrl(product.imageUrl)}
                           alt={product.name}
-                          className="w-full h-full object-contain transition-transform duration-300 hover:scale-105"
+                          className="product-image"
+                          onError={handleImageError}
                         />
                       </div>
                     </Link>
@@ -325,7 +327,7 @@ export default function CatalogPage() {
                       </Link>
 
                       {product.description && (
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2 text-justify">
                           {product.description}
                         </p>
                       )}

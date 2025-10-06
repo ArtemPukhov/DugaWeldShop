@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
+import { getProductImageUrl, handleImageError } from "@/lib/imageUtils";
 
 type Product = {
   id: number;
@@ -15,11 +16,12 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group relative rounded-2xl bg-white shadow-lg overflow-hidden transition-shadow hover:shadow-2xl">
       {/* Картинка */}
-      <div className="h-64 w-full overflow-hidden">
+      <div className="h-64 w-full overflow-hidden image-container">
         <img
-          src={product.imageUrl || "/placeholder.png"}
+          src={getProductImageUrl(product.imageUrl)}
           alt={product.name}
-          className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+          className="product-image"
+          onError={handleImageError}
         />
       </div>
 

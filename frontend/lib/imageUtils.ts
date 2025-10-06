@@ -93,10 +93,10 @@ export function getCategoryImageUrl(imageUrl?: string): string {
  * @param imageUrl - URL изображения или имя файла
  * @returns Объект с информацией о URL
  */
-export function debugImageUrl(imageUrl?: string): { 
-  original: string; 
-  processed: string; 
-  environment: string; 
+export function debugImageUrl(imageUrl?: string): {
+  original: string;
+  processed: string;
+  environment: string;
   baseUrl: string;
   userAgent: string;
   isMobile: boolean;
