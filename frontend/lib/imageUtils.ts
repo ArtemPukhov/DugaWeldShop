@@ -1,14 +1,17 @@
 /**
  * Утилиты для работы с изображениями
  * 
- * Поддерживает два режима работы:
- * - Локально: использует Spring Boot API (/api/files/{filename})
- * - Продакшн: использует MinIO напрямую (/api/v1/buckets/{bucket}/objects/download)
+ * Всегда использует прокси API для надежности:
+ * - Локально: http://localhost:8080/api/files/{filename}
+ * - Продакшн: /api/files/{filename} (относительный URL)
+ * 
+ * Преимущества прокси:
+ * - Работает на всех устройствах (включая мобильные)
+ * - Обходит проблемы с CORS
+ * - Единообразный доступ к изображениям
  * 
  * Переменные окружения:
- * - NEXT_PUBLIC_MINIO_URL: URL MinIO сервера (по умолчанию: http://141.105.71.70:9001)
- * - NEXT_PUBLIC_MINIO_BUCKET: Имя bucket в MinIO (по умолчанию: dugaweld-images)
- * - NEXT_PUBLIC_API_BASE_URL: URL Spring Boot API для локальной разработки
+ * - NEXT_PUBLIC_API_BASE_URL: URL Spring Boot API (опционально)
  */
 
 /**
@@ -27,16 +30,11 @@ export function getImageUrl(imageUrl?: string): string {
   }
 
   // Определяем базовый URL для API
-  if (process.env.NODE_ENV === 'production') {
-    // На продакшн сервере используем MinIO напрямую
-    const minioUrl = process.env.NEXT_PUBLIC_MINIO_URL || 'http://141.105.71.70:9001';
-    const bucketName = process.env.NEXT_PUBLIC_MINIO_BUCKET || 'dugaweld-images';
-    return `${minioUrl}/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${encodeURIComponent(imageUrl)}`;
-  } else {
-    // Локально используем наш API
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-    return `${baseUrl}/api/files/${imageUrl}`;
-  }
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 
+    (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080');
+  
+  // Всегда используем наш прокси API для надежности
+  return `${baseUrl}/api/files/${imageUrl}`;
 }
 
 /**
@@ -65,19 +63,11 @@ export function getImageUrlWithEncoding(imageUrl?: string): string {
   }
 
   // Определяем базовый URL для API
-  if (process.env.NODE_ENV === 'production') {
-    // На продакшн сервере используем MinIO напрямую
-    const minioUrl = process.env.NEXT_PUBLIC_MINIO_URL || 'http://141.105.71.70:9001';
-    const bucketName = process.env.NEXT_PUBLIC_MINIO_BUCKET || 'dugaweld-images';
-    
-    // Правильно кодируем имя файла для MinIO
-    const encodedFileName = encodeURIComponent(imageUrl);
-    return `${minioUrl}/api/v1/buckets/${bucketName}/objects/download?preview=true&prefix=${encodedFileName}`;
-  } else {
-    // Локально используем наш API
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-    return `${baseUrl}/api/files/${imageUrl}`;
-  }
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 
+    (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080');
+  
+  // Всегда используем наш прокси API для надежности
+  return `${baseUrl}/api/files/${imageUrl}`;
 }
 
 /**
@@ -107,16 +97,44 @@ export function debugImageUrl(imageUrl?: string): {
   original: string; 
   processed: string; 
   environment: string; 
-  minioUrl?: string; 
-  bucketName?: string; 
+  baseUrl: string;
+  userAgent: string;
+  isMobile: boolean;
 } {
   const processed = getImageUrlWithEncoding(imageUrl);
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 
+    (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080');
   
   return {
     original: imageUrl || 'undefined',
     processed,
     environment: process.env.NODE_ENV || 'development',
-    minioUrl: process.env.NEXT_PUBLIC_MINIO_URL,
-    bucketName: process.env.NEXT_PUBLIC_MINIO_BUCKET
+    baseUrl,
+    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
+    isMobile: typeof navigator !== 'undefined' ? /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) : false
   };
+}
+
+/**
+ * Проверяет доступность изображения
+ * @param imageUrl - URL изображения
+ * @returns Promise с результатом проверки
+ */
+export async function checkImageAvailability(imageUrl: string): Promise<{
+  available: boolean;
+  status?: number;
+  error?: string;
+}> {
+  try {
+    const response = await fetch(imageUrl, { method: 'HEAD' });
+    return {
+      available: response.ok,
+      status: response.status
+    };
+  } catch (error) {
+    return {
+      available: false,
+      error: (error as Error).message
+    };
+  }
 }

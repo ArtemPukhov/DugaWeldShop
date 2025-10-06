@@ -58,20 +58,43 @@ public class FileController {
         
         try {
             if (!minIOService.fileExists(fileName)) {
+                log.warn("Файл не найден: {}", fileName);
                 return ResponseEntity.notFound().build();
             }
             
             InputStream inputStream = minIOService.getFile(fileName);
             InputStreamResource resource = new InputStreamResource(inputStream);
             
+            // Определяем тип контента по расширению файла
+            String contentType = getContentType(fileName);
+            
             return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CACHE_CONTROL, "public, max-age=3600") // Кэширование на 1 час
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
                     .body(resource);
                     
         } catch (Exception e) {
             log.error("Ошибка при получении файла '{}': {}", fileName, e.getMessage());
             return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    /**
+     * Определяет тип контента по расширению файла
+     */
+    private String getContentType(String fileName) {
+        String extension = fileName.toLowerCase();
+        if (extension.endsWith(".jpg") || extension.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else if (extension.endsWith(".png")) {
+            return "image/png";
+        } else if (extension.endsWith(".gif")) {
+            return "image/gif";
+        } else if (extension.endsWith(".webp")) {
+            return "image/webp";
+        } else {
+            return "application/octet-stream";
         }
     }
     
