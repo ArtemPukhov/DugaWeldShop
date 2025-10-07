@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Head from "next/head";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Header from '@/components/Header';
@@ -39,8 +40,14 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+    <>
+      <Head>
+        <title>DugaWeld - Главная | Сварочное оборудование для профессионалов</title>
+        <meta name="description" content="Главная страница интернет-магазина DugaWeld. Широкий ассортимент сварочного оборудования, лучшие бренды, выгодные цены. Доставка по всей стране." />
+        <meta name="keywords" content="сварочное оборудование, сварочные аппараты, главная, каталог, сварка" />
+      </Head>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
 
       <section className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white text-center py-20">
         <h2 className="text-4xl font-bold mb-4">
@@ -79,7 +86,8 @@ export default function HomePage() {
         </div>
       </div>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 }

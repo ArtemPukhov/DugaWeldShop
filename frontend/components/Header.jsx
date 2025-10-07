@@ -6,7 +6,9 @@ import Link from "next/link";
 export default function Header() {
   return (
     <header className="bg-black text-white p-4 flex justify-between items-center shadow-md">
-      <h1 className="text-2xl font-bold">DugaWeld</h1>
+      <Link href="/" className="text-2xl font-bold hover:text-yellow-400">
+        DugaWeld
+      </Link>
       <nav className="space-x-6">
         <Link href="/" className="hover:text-yellow-400">Главная</Link>
         <Link href="/catalog" className="hover:text-yellow-400">Каталог</Link>

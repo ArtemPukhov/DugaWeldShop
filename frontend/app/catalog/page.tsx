@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Head from "next/head";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -152,8 +153,14 @@ export default function CatalogPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+    <>
+      <Head>
+        <title>Каталог товаров | DugaWeld - Сварочное оборудование</title>
+        <meta name="description" content="Каталог сварочного оборудования DugaWeld. Сварочные аппараты, принадлежности, газосварочное оборудование. Широкий выбор товаров для профессионалов." />
+        <meta name="keywords" content="каталог, сварочное оборудование, сварочные аппараты, товары, сварка" />
+      </Head>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
 
       {/* Заголовок */}
       <section className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white py-16">
@@ -381,7 +388,8 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 }
