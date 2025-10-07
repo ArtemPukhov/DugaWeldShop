@@ -7,6 +7,8 @@ import Link from "next/link";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CategoryHierarchy from "@/components/ui/CategoryHierarchy";
+import ImageCarousel from "@/components/ImageCarousel";
+import { useCarousel } from "@/hooks/useCarousel";
 
 type Category = {
   id: number;
@@ -21,6 +23,9 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Хук для управления каруселью
+  const { slides: carouselSlides, loading: carouselLoading } = useCarousel();
 
   useEffect(() => {
     fetch(`/api/categories/root`)
@@ -49,17 +54,25 @@ export default function HomePage() {
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
 
-      <section className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white text-center py-20">
-        <h2 className="text-4xl font-bold mb-4">
-          Сварочное оборудование для профессионалов
-        </h2>
-        <p className="mb-6">Лучшие бренды, выгодные цены, доставка по всей стране</p>
-        <Link href="/catalog">
-          <Button className="bg-black hover:bg-gray-800 text-white px-6 py-3 rounded-xl">
-            Перейти в каталог
-          </Button>
-        </Link>
-      </section>
+        {/* Карусель изображений */}
+        <section className="w-full">
+          {carouselLoading ? (
+            <div className="w-full h-96 md:h-[500px] lg:h-[600px] bg-gray-200 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+                <p className="text-gray-500">Загрузка карусели...</p>
+              </div>
+            </div>
+          ) : (
+            <ImageCarousel 
+              slides={carouselSlides}
+              autoPlay={true}
+              autoPlayInterval={5000}
+              showIndicators={true}
+              showArrows={true}
+            />
+          )}
+        </section>
 
       <div className="max-w-7xl mx-auto p-6 sm:p-10 flex-1">
         <div className="text-center mb-12">

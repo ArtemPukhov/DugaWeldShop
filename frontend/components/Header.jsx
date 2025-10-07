@@ -14,6 +14,7 @@ export default function Header() {
         <Link href="/catalog" className="hover:text-yellow-400">Каталог</Link>
         <Link href="/about" className="hover:text-yellow-400">О компании</Link>
         <Link href="/contacts" className="hover:text-yellow-400">Контакты</Link>
+        <Link href="/admin/carousel" className="hover:text-yellow-400 text-sm bg-gray-800 px-2 py-1 rounded">Админ</Link>
       </nav>
       <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
         Корзина

@@ -34,6 +34,7 @@ export default function AdminTopBar() {
           <Link href="/admin" className="font-medium">Админ</Link>
           <Link href="/admin/categories" className="text-blue-600">Категории</Link>
           <Link href="/admin/products" className="text-blue-600">Товары</Link>
+          <Link href="/admin/carousel" className="text-blue-600">Карусель</Link>
         </div>
         <div className="flex items-center gap-3">
           {username ? (
