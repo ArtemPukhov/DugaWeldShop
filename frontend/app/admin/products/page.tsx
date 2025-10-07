@@ -13,6 +13,7 @@ type Product = {
   price: number;
   categoryId: number;
   imageUrl?: string;
+  specifications?: string;
 };
 
 export default function AdminProductsPage() {
@@ -26,6 +27,7 @@ export default function AdminProductsPage() {
     description: "",
     price: 0,
     categoryId: 0,
+    specifications: "",
   });
   const [image, setImage] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -58,7 +60,7 @@ export default function AdminProductsPage() {
   }, []);
 
   function resetForm() {
-    setForm({ name: "", description: "", price: 0, categoryId: 0 });
+    setForm({ name: "", description: "", price: 0, categoryId: 0, specifications: "" });
     setImage(null);
     setEditingId(null);
   }
@@ -93,6 +95,7 @@ export default function AdminProductsPage() {
         price: form.price,
         categoryId: form.categoryId,
         imageUrl: form.imageUrl || "",
+        specifications: form.specifications || "",
       });
       resetForm();
       await fetchData();
@@ -189,6 +192,7 @@ export default function AdminProductsPage() {
       price: Number(p.price),
       categoryId: Number(p.categoryId),
       imageUrl: p.imageUrl,
+      specifications: p.specifications || "",
     });
     setImage(null);
   }
@@ -335,6 +339,21 @@ export default function AdminProductsPage() {
                 setForm((s) => ({ ...s, description: e.target.value }))
               }
             />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm mb-1">Характеристики (JSON формат)</label>
+            <textarea
+              className="border rounded px-3 py-2 w-full text-black bg-white"
+              placeholder={`{"Номинальная мощность": "10 кВа", "Сеть": "2x380 В", "ПВ": "10%"}`}
+              value={form.specifications}
+              onChange={(e) =>
+                setForm((s) => ({ ...s, specifications: e.target.value }))
+              }
+              rows={4}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Введите характеристики в формате JSON: {`{"ключ": "значение"}`}
+            </p>
           </div>
           <div>
             <label className="block text-sm mb-1">Категория</label>

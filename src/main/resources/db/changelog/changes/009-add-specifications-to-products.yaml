@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-add-specifications-to-products
+      author: dugaweld
+      changes:
+        - addColumn:
+            tableName: products
+            columns:
+              - column:
+                  name: specifications
+                  type: TEXT
+                  constraints:
+                    nullable: true

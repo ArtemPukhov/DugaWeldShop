@@ -22,6 +22,8 @@ public class ProductDto {
 
     private String imageUrl;
 
+    private String specifications;
+
     @NotNull
     private Long categoryId;
 

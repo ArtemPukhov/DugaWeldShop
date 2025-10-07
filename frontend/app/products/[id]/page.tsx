@@ -15,6 +15,7 @@ type Product = {
   price: number;
   imageUrl?: string;
   categoryId: number;
+  specifications?: string;
 };
 
 export default function ProductPage() {
@@ -23,6 +24,19 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'description' | 'specifications'>('description');
+
+  // Функция для парсинга характеристик из JSON
+  const parseSpecifications = (specsJson?: string) => {
+    if (!specsJson) return [];
+    try {
+      const parsed = JSON.parse(specsJson);
+      return Object.entries(parsed).map(([key, value]) => ({ key, value: String(value) }));
+    } catch (error) {
+      console.error('Ошибка парсинга характеристик:', error);
+      return [];
+    }
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -138,12 +152,69 @@ export default function ProductPage() {
         </div>
       </div>
 
-      {/* Описание товара - теперь снизу и на всю ширину страницы */}
-      {product.description && (
+      {/* Вкладки с описанием и характеристиками */}
+      {(product.description || product.specifications) && (
         <div className="bg-white border-t border-gray-200 py-8">
           <div className="max-w-6xl mx-auto px-4">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-6 text-center">Описание</h3>
-            <p className="text-gray-600 text-lg leading-relaxed text-justify max-w-4xl mx-auto">{product.description}</p>
+            {/* Навигация по вкладкам */}
+            <div className="flex justify-center mb-8">
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setActiveTab('description')}
+                  className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${
+                    activeTab === 'description'
+                      ? 'bg-yellow-500 text-black shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  ОПИСАНИЕ
+                </button>
+                <button
+                  onClick={() => setActiveTab('specifications')}
+                  className={`px-6 py-3 rounded-md font-medium transition-all duration-200 ${
+                    activeTab === 'specifications'
+                      ? 'bg-yellow-500 text-black shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  ХАРАКТЕРИСТИКИ
+                </button>
+              </div>
+            </div>
+
+            {/* Контент вкладок */}
+            <div className="max-w-4xl mx-auto">
+              {activeTab === 'description' && product.description && (
+                <div>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-6">ОПИСАНИЕ</h3>
+                  <p className="text-gray-600 text-lg leading-relaxed text-justify">
+                    {product.description}
+                  </p>
+                </div>
+              )}
+
+              {activeTab === 'specifications' && product.specifications && (
+                <div>
+                  <h3 className="text-2xl font-semibold text-gray-900 mb-6">ТЕХНИЧЕСКИЕ ХАРАКТЕРИСТИКИ</h3>
+                  <div className="bg-gray-50 rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <tbody>
+                        {parseSpecifications(product.specifications).map((spec, index) => (
+                          <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="px-6 py-4 font-medium text-gray-900 border-r border-gray-200 w-1/2">
+                              {spec.key}
+                            </td>
+                            <td className="px-6 py-4 text-gray-600 w-1/2">
+                              {spec.value}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -13,4 +13,6 @@ databaseChangeLog:
       file: classpath:db/changelog/changes/007-add-parent-category.yaml
   - include:
       file: classpath:db/changelog/changes/008-add-sample-subcategories.yaml
+  - include:
+      file: classpath:db/changelog/changes/009-add-specifications-to-products.yaml
 

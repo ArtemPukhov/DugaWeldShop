@@ -188,6 +188,7 @@ public class ProductService {
         entity.setDescription(dto.getDescription());
         entity.setPrice(dto.getPrice());
         entity.setImageUrl(dto.getImageUrl());
+        entity.setSpecifications(dto.getSpecifications());
         Category category = categoryRepository.findById(dto.getCategoryId()).orElseThrow();
         entity.setCategory(category);
     }
@@ -198,6 +199,7 @@ public class ProductService {
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
+        dto.setSpecifications(product.getSpecifications());
         
         // Если imageUrl содержит только имя файла, генерируем полный URL
         if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
