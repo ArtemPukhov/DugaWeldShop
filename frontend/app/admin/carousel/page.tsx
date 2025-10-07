@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { hasToken } from "@/lib/api";
 import { useCarousel } from "@/hooks/useCarousel";
 import { CarouselSlide } from "@/components/ImageCarousel";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,8 @@ import {
 } from "lucide-react";
 
 export default function CarouselAdminPage() {
+  const router = useRouter();
+  const [ready, setReady] = useState(false);
   const {
     slides,
     loading,
@@ -43,6 +47,14 @@ export default function CarouselAdminPage() {
     isActive: true,
     order: slides.length + 1,
   });
+
+  useEffect(() => {
+    if (!hasToken()) {
+      router.replace("/admin/login");
+      return;
+    }
+    setReady(true);
+  }, [router]);
 
   const resetForm = () => {
     setFormData({
@@ -101,6 +113,10 @@ export default function CarouselAdminPage() {
     const slideIds = newSlides.map(s => s.id);
     await reorderSlides(slideIds);
   };
+
+  if (!ready) {
+    return null;
+  }
 
   if (loading) {
     return (
