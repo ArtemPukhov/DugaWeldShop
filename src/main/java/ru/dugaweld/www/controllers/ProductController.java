@@ -5,11 +5,13 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.dugaweld.www.dto.ProductDto;
 import ru.dugaweld.www.dto.CsvProductDto;
 import ru.dugaweld.www.dto.CsvImportRequest;
+import ru.dugaweld.www.dto.BulkMoveRequest;
 import ru.dugaweld.www.services.ProductService;
 import ru.dugaweld.www.services.CsvProductService;
 
@@ -225,6 +227,30 @@ public class ProductController {
         } catch (Exception e) {
             log.error("Ошибка при импорте с маппингом", e);
             return ResponseEntity.internalServerError().body("Ошибка при импорте: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/bulk-move")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<?> moveBulk(@RequestBody BulkMoveRequest request) {
+        try {
+            if (request.getProductIds() == null || request.getProductIds().isEmpty()) {
+                return ResponseEntity.badRequest().body("Список ID товаров не может быть пустым");
+            }
+            
+            if (request.getTargetCategoryId() == null) {
+                return ResponseEntity.badRequest().body("ID целевой категории не указан");
+            }
+            
+            int movedCount = productService.moveBulk(request.getProductIds(), request.getTargetCategoryId());
+            return ResponseEntity.ok(java.util.Map.of(
+                "message", "Перенос завершен",
+                "movedCount", movedCount,
+                "targetCategoryId", request.getTargetCategoryId()
+            ));
+        } catch (Exception e) {
+            log.error("Ошибка при массовом переносе товаров", e);
+            return ResponseEntity.internalServerError().body("Ошибка при переносе: " + e.getMessage());
         }
     }
 }

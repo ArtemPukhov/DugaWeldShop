@@ -122,6 +122,10 @@ export async function apiDeleteProductsBulk(ids: number[]): Promise<{ message: s
   return apiFetchJSON("/products/bulk", "DELETE", ids);
 }
 
+export async function apiMoveProductsBulk(ids: number[], targetCategoryId: number): Promise<{ message: string; movedCount: number; targetCategoryId: number }> {
+  return apiFetchJSON("/products/bulk-move", "PUT", { productIds: ids, targetCategoryId });
+}
+
 export function saveToken(token: string) {
   if (typeof window === "undefined") return;
   localStorage.setItem("dw_admin_token", token);

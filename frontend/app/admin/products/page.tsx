@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiFetch, apiFetchForm, apiFetchJSON, apiDeleteProductsBulk } from "@/lib/api";
+import { apiFetch, apiFetchForm, apiFetchJSON, apiDeleteProductsBulk, apiMoveProductsBulk } from "@/lib/api";
 import AdminTopBar from "@/components/AdminTopBar";
 import { CsvImport } from "@/components/CsvImport";
 
@@ -30,6 +30,8 @@ export default function AdminProductsPage() {
   const [image, setImage] = useState<File | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [targetCategoryId, setTargetCategoryId] = useState<number>(0);
 
   async function fetchData() {
     setLoading(true);
@@ -124,6 +126,35 @@ export default function AdminProductsPage() {
       setError(null);
     } catch (e: any) {
       setError(e.message || "Ошибка массового удаления");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleBulkMove() {
+    if (selectedProducts.length === 0) {
+      setError("Выберите товары для переноса");
+      return;
+    }
+    
+    if (targetCategoryId === 0) {
+      setError("Выберите целевую категорию");
+      return;
+    }
+    
+    if (!confirm(`Перенести ${selectedProducts.length} товаров в выбранную категорию?`)) return;
+    
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await apiMoveProductsBulk(selectedProducts, targetCategoryId);
+      setSelectedProducts([]);
+      setShowMoveDialog(false);
+      setTargetCategoryId(0);
+      await fetchData();
+      setError(null);
+    } catch (e: any) {
+      setError(e.message || "Ошибка массового переноса");
     } finally {
       setLoading(false);
     }
@@ -274,6 +305,12 @@ export default function AdminProductsPage() {
                   Очистить выбор
                 </button>
                 <button
+                  onClick={() => setShowMoveDialog(true)}
+                  className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Перенести в категорию
+                </button>
+                <button
                   onClick={handleBulkDelete}
                   className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                 >
@@ -341,6 +378,55 @@ export default function AdminProductsPage() {
           </table>
         )}
       </div>
+
+      {/* Диалог переноса товаров */}
+      {showMoveDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Перенести товары в категорию</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Выбрано товаров: {selectedProducts.length}
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm mb-2">Выберите целевую категорию:</label>
+              <select
+                className="border rounded px-3 py-2 w-full text-black bg-white"
+                value={targetCategoryId}
+                onChange={(e) => setTargetCategoryId(Number(e.target.value))}
+              >
+                <option value={0} disabled className="text-gray-500">
+                  Выберите категорию
+                </option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id} className="text-black">
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowMoveDialog(false);
+                  setTargetCategoryId(0);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleBulkMove}
+                disabled={targetCategoryId === 0}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                Перенести
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

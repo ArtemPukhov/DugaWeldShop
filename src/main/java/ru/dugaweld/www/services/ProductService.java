@@ -150,6 +150,39 @@ public class ProductService {
         return deletedCount;
     }
 
+    public int moveBulk(List<Long> productIds, Long targetCategoryId) {
+        log.info("Начинаем массовый перенос {} товаров в категорию {}", productIds.size(), targetCategoryId);
+        
+        // Проверяем, что целевая категория существует
+        Category targetCategory = categoryRepository.findById(targetCategoryId)
+            .orElseThrow(() -> new IllegalArgumentException("Категория с ID " + targetCategoryId + " не найдена"));
+        
+        int movedCount = 0;
+        
+        for (Long productId : productIds) {
+            try {
+                Product product = productRepository.findById(productId).orElse(null);
+                if (product != null) {
+                    log.info("Переносим товар ID: {} '{}' в категорию '{}'", 
+                            productId, product.getName(), targetCategory.getName());
+                    
+                    product.setCategory(targetCategory);
+                    productRepository.save(product);
+                    movedCount++;
+                    
+                    log.info("Товар ID: {} успешно перенесен", productId);
+                } else {
+                    log.warn("Товар с ID {} не найден", productId);
+                }
+            } catch (Exception e) {
+                log.error("Ошибка при переносе товара ID {}: {}", productId, e.getMessage());
+            }
+        }
+        
+        log.info("Массовый перенос завершен. Перенесено товаров: {}", movedCount);
+        return movedCount;
+    }
+
     private void apply(ProductDto dto, Product entity) {
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
