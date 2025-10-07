@@ -45,7 +45,7 @@ export function FileUpload({
     try {
       // Проверяем размеры изображения
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         const { width, height } = img;
         const aspectRatio = width / height;
         
@@ -66,18 +66,50 @@ export function FileUpload({
           }
         }
         
-        // Если все проверки пройдены, загружаем файл
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          onChange(result);
+        // Загружаем файл в MinIO
+        try {
+          const formData = new FormData();
+          formData.append('file', file);
+          
+          const response = await fetch('/api/files/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            if (response.status === 403) {
+              throw new Error('Доступ запрещен. Возможно, нужно войти в систему.');
+            } else if (response.status === 413) {
+              throw new Error('Файл слишком большой. Максимальный размер: 2MB');
+            } else {
+              throw new Error(`Ошибка загрузки: ${response.status}`);
+            }
+          }
+          
+          const fileUrl = await response.text();
+          onChange(fileUrl);
           setIsUploading(false);
-        };
-        reader.onerror = () => {
-          alert('Ошибка при чтении файла');
-          setIsUploading(false);
-        };
-        reader.readAsDataURL(file);
+        } catch (uploadError) {
+          console.error('Ошибка загрузки в MinIO:', uploadError);
+          
+          // Fallback: используем data URL если API недоступен
+          if (uploadError.message.includes('403') || uploadError.message.includes('Доступ запрещен')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const result = e.target?.result as string;
+              onChange(result);
+              setIsUploading(false);
+            };
+            reader.onerror = () => {
+              alert('Ошибка при чтении файла');
+              setIsUploading(false);
+            };
+            reader.readAsDataURL(file);
+          } else {
+            alert(`Ошибка при загрузке файла: ${uploadError.message}`);
+            setIsUploading(false);
+          }
+        }
       };
       
       img.onerror = () => {

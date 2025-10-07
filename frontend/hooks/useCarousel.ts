@@ -46,19 +46,49 @@ export function useCarousel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Загружаем данные из localStorage при инициализации
+  const loadFromStorage = () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('carousel-slides');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch (e) {
+          console.error('Ошибка загрузки из localStorage:', e);
+        }
+      }
+    }
+    return mockSlides;
+  };
+
+  // Сохраняем данные в localStorage
+  const saveToStorage = (newSlides: CarouselSlide[]) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('carousel-slides', JSON.stringify(newSlides));
+    }
+  };
+
   // Загрузка слайдов
   const fetchSlides = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // В реальном приложении здесь будет API запрос
-      // const response = await fetch('/api/carousel/slides');
-      // const data = await response.json();
+      // Пробуем загрузить с API, если не получается - используем localStorage
+      try {
+        const response = await fetch('/api/carousel/slides');
+        if (response.ok) {
+          const apiSlides = await response.json();
+          setSlides(apiSlides);
+          return;
+        }
+      } catch (apiError) {
+        console.log('API недоступен, используем localStorage:', apiError);
+      }
       
-      // Пока используем моковые данные
-      await new Promise(resolve => setTimeout(resolve, 500)); // Имитация загрузки
-      setSlides(mockSlides);
+      // Fallback на localStorage
+      const storedSlides = loadFromStorage();
+      setSlides(storedSlides);
     } catch (err) {
       console.error("Ошибка загрузки слайдов:", err);
       setError("Не удалось загрузить слайды карусели");
@@ -71,20 +101,35 @@ export function useCarousel() {
   // Добавление нового слайда
   const addSlide = async (slideData: Omit<CarouselSlide, 'id'>) => {
     try {
+      // Пробуем добавить через API
+      try {
+        const response = await fetch('/api/carousel/slides', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(slideData),
+        });
+        
+        if (response.ok) {
+          const newSlide = await response.json();
+          setSlides(prev => [...prev, newSlide]);
+          return newSlide;
+        }
+      } catch (apiError) {
+        console.log('API недоступен, используем localStorage:', apiError);
+      }
+      
+      // Fallback на localStorage
       const newSlide: CarouselSlide = {
         ...slideData,
-        id: Date.now(), // Временный ID, в реальном приложении будет от сервера
+        id: Date.now(),
       };
       
-      // В реальном приложении здесь будет API запрос
-      // const response = await fetch('/api/carousel/slides', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(slideData),
-      // });
-      // const newSlide = await response.json();
+      setSlides(prev => {
+        const newSlides = [...prev, newSlide];
+        saveToStorage(newSlides);
+        return newSlides;
+      });
       
-      setSlides(prev => [...prev, newSlide]);
       return newSlide;
     } catch (err) {
       console.error("Ошибка добавления слайда:", err);
@@ -95,19 +140,14 @@ export function useCarousel() {
   // Обновление слайда
   const updateSlide = async (id: number, slideData: Partial<CarouselSlide>) => {
     try {
-      // В реальном приложении здесь будет API запрос
-      // const response = await fetch(`/api/carousel/slides/${id}`, {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(slideData),
-      // });
-      // const updatedSlide = await response.json();
-      
-      setSlides(prev => 
-        prev.map(slide => 
+      // Обновляем состояние и сохраняем в localStorage
+      setSlides(prev => {
+        const updatedSlides = prev.map(slide => 
           slide.id === id ? { ...slide, ...slideData } : slide
-        )
-      );
+        );
+        saveToStorage(updatedSlides);
+        return updatedSlides;
+      });
     } catch (err) {
       console.error("Ошибка обновления слайда:", err);
       throw err;
@@ -117,12 +157,12 @@ export function useCarousel() {
   // Удаление слайда
   const deleteSlide = async (id: number) => {
     try {
-      // В реальном приложении здесь будет API запрос
-      // await fetch(`/api/carousel/slides/${id}`, {
-      //   method: 'DELETE',
-      // });
-      
-      setSlides(prev => prev.filter(slide => slide.id !== id));
+      // Обновляем состояние и сохраняем в localStorage
+      setSlides(prev => {
+        const updatedSlides = prev.filter(slide => slide.id !== id);
+        saveToStorage(updatedSlides);
+        return updatedSlides;
+      });
     } catch (err) {
       console.error("Ошибка удаления слайда:", err);
       throw err;
@@ -132,13 +172,7 @@ export function useCarousel() {
   // Переупорядочивание слайдов
   const reorderSlides = async (slideIds: number[]) => {
     try {
-      // В реальном приложении здесь будет API запрос
-      // await fetch('/api/carousel/slides/reorder', {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ slideIds }),
-      // });
-      
+      // Обновляем состояние и сохраняем в localStorage
       setSlides(prev => {
         const reorderedSlides = slideIds.map((id, index) => {
           const slide = prev.find(s => s.id === id);
@@ -146,7 +180,9 @@ export function useCarousel() {
         }).filter(Boolean) as CarouselSlide[];
         
         const remainingSlides = prev.filter(slide => !slideIds.includes(slide.id));
-        return [...reorderedSlides, ...remainingSlides];
+        const updatedSlides = [...reorderedSlides, ...remainingSlides];
+        saveToStorage(updatedSlides);
+        return updatedSlides;
       });
     } catch (err) {
       console.error("Ошибка переупорядочивания слайдов:", err);

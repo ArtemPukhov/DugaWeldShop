@@ -15,4 +15,6 @@ databaseChangeLog:
       file: classpath:db/changelog/changes/008-add-sample-subcategories.yaml
   - include:
       file: classpath:db/changelog/changes/009-add-specifications-to-products.yaml
+  - include:
+      file: classpath:db/changelog/db.changelog-1.1.xml
 
