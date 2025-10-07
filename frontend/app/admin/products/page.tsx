@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { apiFetch, apiFetchForm, apiFetchJSON, apiDeleteProductsBulk, apiMoveProductsBulk } from "@/lib/api";
 import AdminTopBar from "@/components/AdminTopBar";
 import { CsvImport } from "@/components/CsvImport";
@@ -32,6 +32,9 @@ export default function AdminProductsPage() {
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [targetCategoryId, setTargetCategoryId] = useState<number>(0);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<number>(0); // 0 = все товары
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'none'>('none');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   async function fetchData() {
     setLoading(true);
@@ -169,7 +172,7 @@ export default function AdminProductsPage() {
   }
 
   function selectAllProducts() {
-    const allProductIds = products.map(p => p.id!).filter(Boolean);
+    const allProductIds = filteredProducts.map(p => p.id!).filter(Boolean);
     setSelectedProducts(allProductIds);
   }
 
@@ -192,6 +195,60 @@ export default function AdminProductsPage() {
 
   const isEditing = Boolean(editingId);
 
+  // Фильтруем и сортируем товары
+  const filteredProducts = React.useMemo(() => {
+    let filtered = selectedCategoryFilter === 0 
+      ? products 
+      : products.filter(product => product.categoryId === selectedCategoryFilter);
+
+    // Сортируем товары
+    if (sortBy !== 'none') {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue: string | number;
+        let bValue: string | number;
+
+        if (sortBy === 'name') {
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+        } else if (sortBy === 'price') {
+          aValue = Number(a.price);
+          bValue = Number(b.price);
+        } else {
+          return 0;
+        }
+
+        if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [products, selectedCategoryFilter, sortBy, sortOrder]);
+
+  // Получаем количество товаров в каждой категории
+  const getCategoryProductCount = (categoryId: number) => {
+    return products.filter(product => product.categoryId === categoryId).length;
+  };
+
+  // Очищаем выбор при смене фильтра категории
+  const handleCategoryFilterChange = (categoryId: number) => {
+    setSelectedCategoryFilter(categoryId);
+    setSelectedProducts([]);
+  };
+
+  // Функция для обработки сортировки
+  const handleSort = (field: 'name' | 'price') => {
+    if (sortBy === field) {
+      // Если уже сортируем по этому полю, меняем порядок
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Если новое поле, устанавливаем его и порядок по умолчанию
+      setSortBy(field);
+      setSortOrder('asc');
+    }
+  };
+
   return (
     <div>
       <AdminTopBar />
@@ -199,6 +256,46 @@ export default function AdminProductsPage() {
       <h1 className="text-2xl font-semibold">Товары</h1>
 
       {error && <div className="text-red-600">{error}</div>}
+
+      {/* Фильтр по категориям */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm font-medium text-gray-700 mr-2">Категории:</span>
+          <button
+            onClick={() => handleCategoryFilterChange(0)}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              selectedCategoryFilter === 0
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            Все товары ({products.length})
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategoryFilterChange(category.id)}
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                selectedCategoryFilter === category.id
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {category.name} ({getCategoryProductCount(category.id)})
+            </button>
+          ))}
+          
+          {/* Кнопка сброса сортировки */}
+          {sortBy !== 'none' && (
+            <button
+              onClick={() => setSortBy('none')}
+              className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors ml-4"
+            >
+              Сбросить сортировку
+            </button>
+          )}
+        </div>
+      </div>
 
       <CsvImport onImportComplete={fetchData} />
 
@@ -296,6 +393,11 @@ export default function AdminProductsPage() {
             <div className="flex items-center justify-between">
               <span className="text-blue-800">
                 Выбрано товаров: {selectedProducts.length}
+                {selectedCategoryFilter !== 0 && (
+                  <span className="text-sm text-gray-600 ml-2">
+                    (в категории "{categories.find(c => c.id === selectedCategoryFilter)?.name}")
+                  </span>
+                )}
               </span>
               <div className="space-x-2">
                 <button
@@ -323,6 +425,13 @@ export default function AdminProductsPage() {
 
         {loading ? (
           <div>Загрузка...</div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            {selectedCategoryFilter === 0 
+              ? "Товары не найдены" 
+              : `В категории "${categories.find(c => c.id === selectedCategoryFilter)?.name}" нет товаров`
+            }
+          </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
@@ -330,19 +439,43 @@ export default function AdminProductsPage() {
                 <th className="py-2 w-12">
                   <input
                     type="checkbox"
-                    checked={selectedProducts.length === products.length && products.length > 0}
-                    onChange={selectedProducts.length === products.length ? clearSelection : selectAllProducts}
+                    checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+                    onChange={selectedProducts.length === filteredProducts.length ? clearSelection : selectAllProducts}
                     className="rounded"
                   />
                 </th>
-                <th>Название</th>
-                <th>Цена</th>
+                <th>
+                  <button
+                    onClick={() => handleSort('name')}
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Название
+                    {sortBy === 'name' && (
+                      <span className="text-xs">
+                        {sortOrder === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </button>
+                </th>
+                <th>
+                  <button
+                    onClick={() => handleSort('price')}
+                    className="flex items-center gap-1 hover:text-blue-600 transition-colors"
+                  >
+                    Цена
+                    {sortBy === 'price' && (
+                      <span className="text-xs">
+                        {sortOrder === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
+                  </button>
+                </th>
                 <th>Категория</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
+              {filteredProducts.map((p) => (
                 <tr key={p.id} className="border-t">
                   <td className="py-2">
                     <input
