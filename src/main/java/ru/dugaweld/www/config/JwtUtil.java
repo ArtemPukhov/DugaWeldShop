@@ -30,8 +30,18 @@ public class JwtUtil {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTimeMs))
+                .claim("roles", getRolesForUser(username))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+    
+    private String getRolesForUser(String username) {
+        // Для простоты возвращаем роль на основе username
+        // В реальном приложении это должно быть из базы данных
+        if ("admin".equals(username)) {
+            return "ROLE_ADMIN";
+        }
+        return "ROLE_USER";
     }
 
     public String extractUsername(String token) {
@@ -41,6 +51,15 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+    
+    public String extractRoles(String token) {
+        return Jwts.parser()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("roles", String.class);
     }
 
     public boolean validateToken(String token) {

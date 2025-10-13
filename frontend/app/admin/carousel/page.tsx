@@ -266,7 +266,7 @@ export default function CarouselAdminPage() {
           {slides
             .sort((a, b) => a.order - b.order)
             .map((slide, index) => (
-            <Card key={slide.id} className="overflow-hidden">
+            <Card key={`${slide.id}-${index}`} className="overflow-hidden">
               <div className="relative">
                 <img
                   src={slide.imageUrl}

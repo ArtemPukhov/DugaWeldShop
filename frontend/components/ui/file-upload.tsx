@@ -70,19 +70,33 @@ export function FileUpload({
         try {
           const formData = new FormData();
           formData.append('file', file);
-          
+
+          // Получаем токен из localStorage
+          const token = localStorage.getItem('dw_admin_token');
+          console.log('Токен для загрузки файла:', token ? 'Есть' : 'Отсутствует');
+          console.log('Токен (первые 20 символов):', token ? token.substring(0, 20) + '...' : 'null');
+
           const response = await fetch('/api/files/upload', {
             method: 'POST',
             body: formData,
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
           });
           
+          console.log('Статус ответа:', response.status);
+          console.log('Заголовки ответа:', Object.fromEntries(response.headers.entries()));
+          
           if (!response.ok) {
-            if (response.status === 403) {
+            if (response.status === 401) {
+              throw new Error('Требуется авторизация. Пожалуйста, войдите в систему.');
+            } else if (response.status === 403) {
               throw new Error('Доступ запрещен. Возможно, нужно войти в систему.');
             } else if (response.status === 413) {
               throw new Error('Файл слишком большой. Максимальный размер: 2MB');
             } else {
-              throw new Error(`Ошибка загрузки: ${response.status}`);
+              const errorText = await response.text().catch(() => '');
+              throw new Error(`Ошибка загрузки: ${response.status} ${errorText}`);
             }
           }
           
@@ -93,7 +107,8 @@ export function FileUpload({
           console.error('Ошибка загрузки в MinIO:', uploadError);
           
           // Fallback: используем data URL если API недоступен
-          if (uploadError.message.includes('403') || uploadError.message.includes('Доступ запрещен')) {
+          if (uploadError.message.includes('401') || uploadError.message.includes('403') || 
+              uploadError.message.includes('Доступ запрещен') || uploadError.message.includes('авторизация')) {
             const reader = new FileReader();
             reader.onload = (e) => {
               const result = e.target?.result as string;

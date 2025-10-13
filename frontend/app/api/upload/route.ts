@@ -5,6 +5,12 @@ import { existsSync, mkdirSync } from 'fs';
 
 export async function POST(request: NextRequest) {
   try {
+    // Проверяем авторизацию
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Требуется авторизация' }, { status: 401 });
+    }
+
     const data = await request.formData();
     const file: File | null = data.get('file') as unknown as File;
 

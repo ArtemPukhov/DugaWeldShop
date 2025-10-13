@@ -36,13 +36,14 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/products/**",
-                                "/categories/**",
-                                "/api/files/**"
+                                "/categories/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/carousel/**").permitAll() // Только GET разрешен без авторизации
-                        .requestMatchers(HttpMethod.POST, "/products/**", "/categories/**", "/api/carousel/**", "/api/files/upload").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // GET файлов без авторизации
+                        .requestMatchers(HttpMethod.POST, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/files/upload").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()

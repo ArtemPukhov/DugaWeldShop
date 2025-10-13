@@ -31,6 +31,6 @@ public class CarouselSlide {
     @Column(nullable = false)
     private Boolean isActive = true;
     
-    @Column(name = "order", nullable = false)
+    @Column(name = "\"order\"", nullable = false)
     private Integer order = 0;
 }

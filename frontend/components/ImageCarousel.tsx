@@ -58,6 +58,23 @@ export default function ImageCarousel({
     setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
   };
 
+  // Функция для извлечения URL из строки или объекта
+  function getImageUrl(imageUrl: string | { url: string }) {
+    if (!imageUrl) return "";
+    if (typeof imageUrl === "string") {
+      // Попробуем распарсить как JSON, если это строка-объект
+      try {
+        const parsed = JSON.parse(imageUrl);
+        if (parsed && typeof parsed.url === "string") return parsed.url;
+      } catch {
+        // Если не JSON, возвращаем как есть
+        return imageUrl;
+      }
+    }
+    if (typeof imageUrl === "object" && imageUrl.url) return imageUrl.url;
+    return "";
+  }
+
   if (activeSlides.length === 0) {
     return (
       <div className="w-full h-96 bg-gray-200 flex items-center justify-center">
@@ -67,6 +84,7 @@ export default function ImageCarousel({
   }
 
   const currentSlideData = activeSlides[currentSlide];
+  const imageUrl = getImageUrl(currentSlideData.imageUrl);
 
   return (
     <div 
@@ -77,7 +95,7 @@ export default function ImageCarousel({
       {/* Основное изображение */}
       <div className="relative w-full h-full">
         <img
-          src={currentSlideData.imageUrl}
+          src={imageUrl}
           alt={currentSlideData.title}
           className="w-full h-full object-cover"
         />
@@ -147,4 +165,70 @@ export default function ImageCarousel({
       )}
     </div>
   );
+}
+
+// Пример использования слайдов
+const slides: CarouselSlide[] = [
+  {
+    id: 1,
+    imageUrl: JSON.stringify({ url: "https://via.placeholder.com/800x600.png?text=Slide+1" }),
+    title: "Слайд 1",
+    subtitle: "Подзаголовок 1",
+    linkUrl: "https://example.com/1",
+    isActive: true,
+    order: 1,
+  },
+  {
+    id: 2,
+    imageUrl: JSON.stringify({ url: "https://via.placeholder.com/800x600.png?text=Slide+2" }),
+    title: "Слайд 2",
+    subtitle: "Подзаголовок 2",
+    linkUrl: "https://example.com/2",
+    isActive: true,
+    order: 2,
+  },
+  {
+    id: 3,
+    imageUrl: JSON.stringify({ url: "https://via.placeholder.com/800x600.png?text=Slide+3" }),
+    title: "Слайд 3",
+    subtitle: "Подзаголовок 3",
+    linkUrl: "https://example.com/3",
+    isActive: true,
+    order: 3,
+  },
+];
+
+// Пример функции загрузки слайдов
+async function loadSlides() {
+  const response = await fetch("/api/slides", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Ошибка при загрузке слайдов");
+  }
+
+  const data = await response.json();
+  return data.slides as CarouselSlide[];
+}
+
+// Пример отправки формы с использованием fetch
+async function submitForm(formData: FormData) {
+  const response = await fetch("/api/submit", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${yourToken}`,
+      // другие заголовки
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Ошибка при отправке формы");
+  }
+
+  return response.json();
 }
