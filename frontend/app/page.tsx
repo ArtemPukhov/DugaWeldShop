@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CategoryHierarchy from "@/components/ui/CategoryHierarchy";
 import ImageCarousel from "@/components/ImageCarousel";
+import HeroSection from "@/components/HeroSection";
 import { useCarousel } from "@/hooks/useCarousel";
 
 type Category = {
@@ -54,6 +55,9 @@ export default function HomePage() {
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
 
+        {/* Hero блок с заголовком и слоганом */}
+        <HeroSection />
+
         {/* Карусель изображений */}
         {carouselEnabled && (
           <section className="w-full">
@@ -78,8 +82,10 @@ export default function HomePage() {
 
       <div className="max-w-7xl mx-auto p-6 sm:p-10 flex-1">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Наши категории</h2>
-          <p className="text-gray-600 text-lg">Выберите категорию для просмотра товаров</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Наши категории</h2>
+          <p className="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto">
+            Широкий ассортимент профессионального сварочного оборудования для любых задач
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
