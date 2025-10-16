@@ -276,31 +276,40 @@ export default function HeroAdminPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white p-6 rounded-lg">
+              <div className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white p-4 rounded-lg">
                 <div className="text-center">
-                  <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                  <h1 className="text-2xl md:text-3xl font-bold mb-3">
                     {heroData.title}
                   </h1>
-                  <p className="text-lg md:text-xl font-light mb-6 text-blue-100">
+                  <p className="text-base md:text-lg font-light mb-4 text-blue-100">
                     {heroData.slogan}
                   </p>
                   
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center items-center mb-4">
+                    <button className="bg-yellow-500 text-black font-bold px-4 py-2 rounded text-sm">
+                      Перейти в каталог
+                    </button>
+                    <button className="border border-white text-white font-semibold px-4 py-2 rounded text-sm">
+                      Связаться с нами
+                    </button>
+                  </div>
+                  
                   {heroData.showAdvantages && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 pt-4 border-t border-blue-700">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4 pt-3 border-t border-blue-700">
                       <div className="text-center">
-                        <div className="text-2xl mb-2">{heroData.advantage1.icon}</div>
-                        <h3 className="font-semibold mb-1">{heroData.advantage1.title}</h3>
-                        <p className="text-blue-200 text-sm">{heroData.advantage1.description}</p>
+                        <div className="text-lg mb-1">{heroData.advantage1.icon}</div>
+                        <h3 className="text-sm font-semibold mb-1">{heroData.advantage1.title}</h3>
+                        <p className="text-blue-200 text-xs">{heroData.advantage1.description}</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl mb-2">{heroData.advantage2.icon}</div>
-                        <h3 className="font-semibold mb-1">{heroData.advantage2.title}</h3>
-                        <p className="text-blue-200 text-sm">{heroData.advantage2.description}</p>
+                        <div className="text-lg mb-1">{heroData.advantage2.icon}</div>
+                        <h3 className="text-sm font-semibold mb-1">{heroData.advantage2.title}</h3>
+                        <p className="text-blue-200 text-xs">{heroData.advantage2.description}</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl mb-2">{heroData.advantage3.icon}</div>
-                        <h3 className="font-semibold mb-1">{heroData.advantage3.title}</h3>
-                        <p className="text-blue-200 text-sm">{heroData.advantage3.description}</p>
+                        <div className="text-lg mb-1">{heroData.advantage3.icon}</div>
+                        <h3 className="text-sm font-semibold mb-1">{heroData.advantage3.title}</h3>
+                        <p className="text-blue-200 text-xs">{heroData.advantage3.description}</p>
                       </div>
                     </div>
                   )}

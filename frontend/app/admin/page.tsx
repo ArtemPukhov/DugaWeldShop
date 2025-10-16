@@ -81,6 +81,22 @@ export default function AdminHomePage() {
               </p>
             </div>
           </Link>
+
+          <Link href="/admin/hero" className="block">
+            <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 p-6 border border-gray-200">
+              <div className="flex items-center mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Главная страница</h3>
+              </div>
+              <p className="text-gray-600 text-sm">
+                Настройка заголовка, слогана и преимуществ на главной странице сайта
+              </p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>
