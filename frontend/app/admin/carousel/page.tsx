@@ -31,10 +31,12 @@ export default function CarouselAdminPage() {
     slides,
     loading,
     error,
+    carouselEnabled,
     addSlide,
     updateSlide,
     deleteSlide,
     reorderSlides,
+    toggleCarousel,
   } = useCarousel();
 
   const [isAdding, setIsAdding] = useState(false);
@@ -146,12 +148,32 @@ export default function CarouselAdminPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Управление каруселью
-          </h1>
-          <p className="text-gray-600">
-            Добавляйте, редактируйте и управляйте слайдами карусели на главной странице
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Управление каруселью
+              </h1>
+              <p className="text-gray-600">
+                Добавляйте, редактируйте и управляйте слайдами карусели на главной странице
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={carouselEnabled}
+                  onCheckedChange={toggleCarousel}
+                />
+                <Label className="text-sm font-medium">
+                  {carouselEnabled ? "Карусель включена" : "Карусель отключена"}
+                </Label>
+              </div>
+              {!carouselEnabled && (
+                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  Карусель скрыта на главной странице
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Форма добавления/редактирования */}
@@ -254,10 +276,17 @@ export default function CarouselAdminPage() {
         {/* Кнопка добавления */}
         {!isAdding && (
           <div className="mb-6">
-            <Button onClick={() => setIsAdding(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Добавить слайд
-            </Button>
+            <div className="flex justify-between items-center">
+              <Button onClick={() => setIsAdding(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Добавить слайд
+              </Button>
+              {!carouselEnabled && (
+                <div className="text-sm text-amber-600 bg-amber-50 border border-amber-200 px-3 py-2 rounded-lg">
+                  ⚠️ Карусель отключена и не отображается на главной странице
+                </div>
+              )}
+            </div>
           </div>
         )}
 

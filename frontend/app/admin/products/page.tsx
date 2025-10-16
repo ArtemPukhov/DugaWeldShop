@@ -261,46 +261,6 @@ export default function AdminProductsPage() {
 
       {error && <div className="text-red-600">{error}</div>}
 
-      {/* Фильтр по категориям */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-sm font-medium text-gray-700 mr-2">Категории:</span>
-          <button
-            onClick={() => handleCategoryFilterChange(0)}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              selectedCategoryFilter === 0
-                ? 'bg-blue-600 text-white'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            Все товары ({products.length})
-          </button>
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => handleCategoryFilterChange(category.id)}
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                selectedCategoryFilter === category.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              }`}
-            >
-              {category.name} ({getCategoryProductCount(category.id)})
-            </button>
-          ))}
-          
-          {/* Кнопка сброса сортировки */}
-          {sortBy !== 'none' && (
-            <button
-              onClick={() => setSortBy('none')}
-              className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors ml-4"
-            >
-              Сбросить сортировку
-            </button>
-          )}
-        </div>
-      </div>
-
       <CsvImport onImportComplete={fetchData} />
 
       <form
@@ -405,6 +365,46 @@ export default function AdminProductsPage() {
           )}
         </div>
       </form>
+
+      {/* Фильтр по категориям */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm font-medium text-gray-700 mr-2">Категории:</span>
+          <button
+            onClick={() => handleCategoryFilterChange(0)}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              selectedCategoryFilter === 0
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            Все товары ({products.length})
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              onClick={() => handleCategoryFilterChange(category.id)}
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                selectedCategoryFilter === category.id
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              {category.name} ({getCategoryProductCount(category.id)})
+            </button>
+          ))}
+          
+          {/* Кнопка сброса сортировки */}
+          {sortBy !== 'none' && (
+            <button
+              onClick={() => setSortBy('none')}
+              className="px-3 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors ml-4"
+            >
+              Сбросить сортировку
+            </button>
+          )}
+        </div>
+      </div>
 
       <div>
         {selectedProducts.length > 0 && (

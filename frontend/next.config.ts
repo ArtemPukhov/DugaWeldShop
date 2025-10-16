@@ -28,6 +28,15 @@ const nextConfig = {
       },
     ];
   },
+  // Настройки для обработки файлов
+  serverExternalPackages: [],
+  // Увеличиваем лимиты для загрузки файлов
+  serverRuntimeConfig: {
+    maxFileSize: '20mb',
+  },
+  publicRuntimeConfig: {
+    maxFileSize: '20mb',
+  },
 };
 
 module.exports = Object.assign(

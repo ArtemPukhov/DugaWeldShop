@@ -25,7 +25,7 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   
   // Хук для управления каруселью
-  const { slides: carouselSlides, loading: carouselLoading } = useCarousel();
+  const { slides: carouselSlides, loading: carouselLoading, carouselEnabled } = useCarousel();
 
   useEffect(() => {
     fetch(`/api/categories/root`)
@@ -55,24 +55,26 @@ export default function HomePage() {
         <Header />
 
         {/* Карусель изображений */}
-        <section className="w-full">
-          {carouselLoading ? (
-            <div className="w-full h-96 md:h-[500px] lg:h-[600px] bg-gray-200 flex items-center justify-center">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
-                <p className="text-gray-500">Загрузка карусели...</p>
+        {carouselEnabled && (
+          <section className="w-full">
+            {carouselLoading ? (
+              <div className="w-full h-96 md:h-[500px] lg:h-[600px] bg-gray-200 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+                  <p className="text-gray-500">Загрузка карусели...</p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <ImageCarousel 
-              slides={carouselSlides}
-              autoPlay={true}
-              autoPlayInterval={5000}
-              showIndicators={true}
-              showArrows={true}
-            />
-          )}
-        </section>
+            ) : (
+              <ImageCarousel 
+                slides={carouselSlides}
+                autoPlay={true}
+                autoPlayInterval={5000}
+                showIndicators={true}
+                showArrows={true}
+              />
+            )}
+          </section>
+        )}
 
       <div className="max-w-7xl mx-auto p-6 sm:p-10 flex-1">
         <div className="text-center mb-12">

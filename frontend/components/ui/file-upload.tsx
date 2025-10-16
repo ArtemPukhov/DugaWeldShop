@@ -100,7 +100,8 @@ export function FileUpload({
             }
           }
           
-          const fileUrl = await response.text();
+          const result = await response.json();
+          const fileUrl = result.url || result;
           onChange(fileUrl);
           setIsUploading(false);
         } catch (uploadError) {

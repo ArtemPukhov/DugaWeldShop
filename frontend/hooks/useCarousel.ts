@@ -54,6 +54,7 @@ export function useCarousel() {
   const [slides, setSlides] = useState<CarouselSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [carouselEnabled, setCarouselEnabled] = useState<boolean>(true);
 
   // Загружаем данные из localStorage при инициализации
   const loadFromStorage = () => {
@@ -68,6 +69,24 @@ export function useCarousel() {
       }
     }
     return mockSlides;
+  };
+
+  // Загружаем настройку карусели из localStorage
+  const loadCarouselSetting = () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('carousel-enabled');
+      if (stored !== null) {
+        return JSON.parse(stored);
+      }
+    }
+    return true; // По умолчанию карусель включена
+  };
+
+  // Сохраняем настройку карусели в localStorage
+  const saveCarouselSetting = (enabled: boolean) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('carousel-enabled', JSON.stringify(enabled));
+    }
   };
 
   // Сохраняем данные в localStorage
@@ -212,18 +231,27 @@ export function useCarousel() {
     }
   };
 
+  // Функция для переключения состояния карусели
+  const toggleCarousel = (enabled: boolean) => {
+    setCarouselEnabled(enabled);
+    saveCarouselSetting(enabled);
+  };
+
   useEffect(() => {
     fetchSlides();
+    setCarouselEnabled(loadCarouselSetting());
   }, []);
 
   return {
     slides,
     loading,
     error,
+    carouselEnabled,
     addSlide,
     updateSlide,
     deleteSlide,
     reorderSlides,
+    toggleCarousel,
     refetch: fetchSlides,
   };
 }
