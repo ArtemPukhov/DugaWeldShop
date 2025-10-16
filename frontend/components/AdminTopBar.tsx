@@ -67,6 +67,12 @@ export default function AdminTopBar() {
           >
             Главная
           </Link>
+          <Link 
+            href="/admin/orders" 
+            className={`${isActive('/admin/orders') ? 'text-blue-800 border-b-2 border-blue-600 pb-1' : 'text-blue-600 hover:text-blue-800'}`}
+          >
+            Заказы
+          </Link>
         </div>
         <div className="flex items-center gap-3">
           {username ? (

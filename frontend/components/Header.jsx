@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import CartIcon from "@/components/CartIcon";
 
 export default function Header() {
   return (
@@ -15,9 +16,9 @@ export default function Header() {
         <Link href="/about" className="hover:text-yellow-400">О компании</Link>
         <Link href="/contacts" className="hover:text-yellow-400">Контакты</Link>
       </nav>
-      <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
-        Корзина
-      </Button>
+      <div className="flex items-center space-x-4">
+        <CartIcon />
+      </div>
     </header>
   );
 }

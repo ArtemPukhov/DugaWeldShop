@@ -66,7 +66,7 @@ export default function HeroSection({
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
           <Link 
-            href="/catalog"
+            href="/"
             className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-3 rounded-lg text-base transition-all duration-300 hover:scale-105 shadow-lg"
           >
             Перейти в каталог

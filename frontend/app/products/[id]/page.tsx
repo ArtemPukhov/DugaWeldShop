@@ -8,6 +8,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CategoryList from "@/components/ui/CategoryList";
 import ProductDescriptionView from "@/components/ProductDescriptionView";
+import { useCart } from '@/contexts/CartContext';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart, Check } from 'lucide-react';
 
 type Product = {
   id: number;
@@ -26,6 +29,22 @@ export default function ProductPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications'>('description');
+  const [addedToCart, setAddedToCart] = useState(false);
+  const { addItem, isInCart } = useCart();
+
+  const handleAddToCart = () => {
+    if (product) {
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        imageUrl: product.imageUrl,
+        categoryId: product.categoryId,
+      });
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2000);
+    }
+  };
 
   // Функция для парсинга характеристик из JSON
   const parseSpecifications = (specsJson?: string) => {
@@ -131,15 +150,33 @@ export default function ProductPage() {
                 {product.price.toLocaleString()} ₽
               </p>
               <div className="flex gap-4 mt-4">
-                <button
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105"
-                  onClick={() => {
-                    // Временная логика добавления в корзину
-                    alert(`Товар "${product.name}" добавлен в корзину!`);
-                  }}
+                <Button
+                  onClick={handleAddToCart}
+                  className={`font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center ${
+                    addedToCart 
+                      ? 'bg-green-500 hover:bg-green-600 text-white' 
+                      : isInCart(product.id)
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                      : 'bg-yellow-500 hover:bg-yellow-600 text-black'
+                  }`}
                 >
-                  В корзину
-                </button>
+                  {addedToCart ? (
+                    <>
+                      <Check className="w-5 h-5 mr-2" />
+                      Добавлено!
+                    </>
+                  ) : isInCart(product.id) ? (
+                    <>
+                      <ShoppingCart className="w-5 h-5 mr-2" />
+                      В корзине
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-5 h-5 mr-2" />
+                      В корзину
+                    </>
+                  )}
+                </Button>
                 <Link
                   href="/"
                   className="bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center"

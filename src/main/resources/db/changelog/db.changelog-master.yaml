@@ -16,5 +16,9 @@ databaseChangeLog:
   - include:
       file: classpath:db/changelog/changes/009-add-specifications-to-products.yaml
   - include:
+      file: classpath:db/changelog/changes/010-create-orders.yaml
+  - include:
+      file: classpath:db/changelog/changes/011-create-order-items.yaml
+  - include:
       file: classpath:db/changelog/db.changelog-1.1.xml
 
