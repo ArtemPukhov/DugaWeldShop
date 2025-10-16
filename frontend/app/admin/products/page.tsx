@@ -30,6 +30,7 @@ export default function AdminProductsPage() {
     specifications: "",
   });
   const [image, setImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
@@ -62,6 +63,7 @@ export default function AdminProductsPage() {
   function resetForm() {
     setForm({ name: "", description: "", price: 0, categoryId: 0, specifications: "" });
     setImage(null);
+    setImageUrl("");
     setEditingId(null);
   }
 
@@ -75,6 +77,7 @@ export default function AdminProductsPage() {
       fd.append("price", String(form.price));
       fd.append("categoryId", String(form.categoryId));
       if (image) fd.append("image", image);
+      if (imageUrl) fd.append("imageUrl", imageUrl);
 
       await apiFetch(`/products`, { method: "POST", body: fd });
       resetForm();
@@ -94,7 +97,7 @@ export default function AdminProductsPage() {
         description: form.description,
         price: form.price,
         categoryId: form.categoryId,
-        imageUrl: form.imageUrl || "",
+        imageUrl: imageUrl || form.imageUrl || "",
         specifications: form.specifications || "",
       });
       resetForm();
@@ -195,6 +198,7 @@ export default function AdminProductsPage() {
       specifications: p.specifications || "",
     });
     setImage(null);
+    setImageUrl(p.imageUrl || "");
   }
 
   const isEditing = Boolean(editingId);
@@ -335,16 +339,61 @@ export default function AdminProductsPage() {
               ))}
             </select>
           </div>
-          {!isEditing && (
-            <div>
-              <label className="block text-sm mb-1">Изображение</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImage(e.target.files?.[0] || null)}
-              />
+          <div>
+            <label className="block text-sm mb-1">Изображение</label>
+            <div className="space-y-2">
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Загрузить файл:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    setImage(e.target.files?.[0] || null);
+                    if (e.target.files?.[0]) {
+                      setImageUrl(""); // Очищаем URL если выбран файл
+                    }
+                  }}
+                />
+                {image && (
+                  <div className="mt-2">
+                    <img 
+                      src={URL.createObjectURL(image)} 
+                      alt="Предварительный просмотр" 
+                      className="max-w-32 max-h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="text-center text-xs text-gray-500">или</div>
+              <div>
+                <label className="block text-xs text-gray-600 mb-1">Вставить URL изображения:</label>
+                <input
+                  type="url"
+                  className="border rounded px-3 py-2 w-full text-black bg-white"
+                  placeholder="https://example.com/image.jpg"
+                  value={imageUrl}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value);
+                    if (e.target.value) {
+                      setImage(null); // Очищаем файл если введен URL
+                    }
+                  }}
+                />
+                {imageUrl && (
+                  <div className="mt-2">
+                    <img 
+                      src={imageUrl} 
+                      alt="Предварительный просмотр" 
+                      className="max-w-32 max-h-32 object-cover rounded border"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
 
         <div className="flex gap-2">

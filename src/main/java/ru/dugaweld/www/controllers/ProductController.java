@@ -59,7 +59,8 @@ public class ProductController {
             @RequestParam("description") String description,
             @RequestParam("price") BigDecimal price,
             @RequestParam("categoryId") Long categoryId,
-            @RequestPart("image") MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "imageUrl", required = false) String imageUrl) {
 
         ProductDto dto = new ProductDto();
         dto.setName(name);
@@ -67,7 +68,7 @@ public class ProductController {
         dto.setPrice(price);
         dto.setCategoryId(categoryId);
 
-        ProductDto created = productService.create(dto, image);
+        ProductDto created = productService.create(dto, image, imageUrl);
         return ResponseEntity.created(URI.create("/products/" + created.getId())).body(created);
     }
 

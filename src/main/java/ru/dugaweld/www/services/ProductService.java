@@ -59,6 +59,22 @@ public class ProductService {
         return toDto(productRepository.save(product));
     }
 
+    public ProductDto create(ProductDto dto, MultipartFile image, String imageUrl) {
+        Product product = new Product();
+        
+        // Приоритет: если есть файл, используем его, иначе URL
+        if (image != null && !image.isEmpty()) {
+            String fileName = uploadImageToMinIO(image);
+            dto.setImageUrl(fileName); // Сохраняем только имя файла
+        } else if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            // Если передан URL, сохраняем его как есть
+            dto.setImageUrl(imageUrl.trim());
+        }
+        
+        apply(dto, product);
+        return toDto(productRepository.save(product));
+    }
+
     public ProductDto update(Long id, ProductDto dto) {
         Product existing = productRepository.findById(id).orElseThrow();
         apply(dto, existing);
