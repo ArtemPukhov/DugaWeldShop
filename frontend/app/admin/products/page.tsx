@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { apiFetch, apiFetchForm, apiFetchJSON, apiDeleteProductsBulk, apiMoveProductsBulk } from "@/lib/api";
 import AdminTopBar from "@/components/AdminTopBar";
 import { CsvImport } from "@/components/CsvImport";
+import ProductDescriptionEditor from "@/components/ProductDescriptionEditor";
 
 type Category = { id: number; name: string; imageUrl?: string; };
 type Product = {
@@ -296,12 +297,10 @@ export default function AdminProductsPage() {
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm mb-1">Описание</label>
-            <textarea
-              className="border rounded px-3 py-2 w-full text-black bg-white"
-              value={form.description}
-              onChange={(e) =>
-                setForm((s) => ({ ...s, description: e.target.value }))
-              }
+            <ProductDescriptionEditor
+              initialValue={form.description || ""}
+              onSave={(description) => setForm((s) => ({ ...s, description }))}
+              isEditing={true}
             />
           </div>
           <div className="md:col-span-2">

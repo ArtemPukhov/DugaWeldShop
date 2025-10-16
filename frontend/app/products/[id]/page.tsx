@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CategoryList from "@/components/ui/CategoryList";
+import ProductDescriptionView from "@/components/ProductDescriptionView";
 
 type Product = {
   id: number;
@@ -187,9 +188,10 @@ export default function ProductPage() {
               {activeTab === 'description' && product.description && (
                 <div>
                   <h3 className="text-2xl font-semibold text-gray-900 mb-6">ОПИСАНИЕ</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed text-justify">
-                    {product.description}
-                  </p>
+                  <ProductDescriptionView 
+                    description={product.description}
+                    className="text-lg"
+                  />
                 </div>
               )}
 
