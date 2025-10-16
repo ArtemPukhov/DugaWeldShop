@@ -41,6 +41,9 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/orders/**").permitAll() // Разрешить создание заказов без авторизации
+                        .requestMatchers(HttpMethod.PUT, "/orders/**").permitAll() // Разрешить изменение заказов без авторизации
+                        .requestMatchers(HttpMethod.DELETE, "/orders/**").permitAll() // Разрешить удаление заказов без авторизации
                         .requestMatchers(HttpMethod.GET, "/api/carousel/**").permitAll() // Только GET разрешен без авторизации
                         .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // GET файлов без авторизации
                         .requestMatchers(HttpMethod.POST, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")

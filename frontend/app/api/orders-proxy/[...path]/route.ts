@@ -84,7 +84,10 @@ export async function DELETE(
 ) {
   try {
     const path = params.path.length > 0 ? params.path.join('/') : '';
-    const url = `${API_BASE_URL}/api/orders${path ? `/${path}` : ''}`;
+    const url = `${API_BASE_URL}/orders${path ? `/${path}` : ''}`;
+    
+    console.log('API Proxy DELETE - Request URL:', url);
+    console.log('API Proxy DELETE - Path:', path);
 
     const response = await fetch(url, {
       method: 'DELETE',
@@ -92,6 +95,8 @@ export async function DELETE(
         'Content-Type': 'application/json',
       },
     });
+
+    console.log('API Proxy DELETE - Response status:', response.status);
 
     if (!response.ok) {
       return NextResponse.json(
