@@ -55,6 +55,7 @@ export function useCarousel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [carouselEnabled, setCarouselEnabled] = useState<boolean>(true);
+  const apiBase = process.env.NEXT_PUBLIC_API_TARGET || "";
 
   // Загружаем данные из localStorage при инициализации
   const loadFromStorage = () => {
@@ -103,7 +104,7 @@ export function useCarousel() {
       setError(null);
       
       // Загружаем с API
-      const response = await fetch('/api/carousel/slides', {
+      const response = await fetch(`${apiBase}/api/carousel/slides`, {
         headers: getAuthHeaders()
       });
       if (response.ok) {
@@ -134,7 +135,7 @@ export function useCarousel() {
   // Добавление нового слайда
   const addSlide = async (slideData: Omit<CarouselSlide, 'id'>) => {
     try {
-      const response = await fetch('/api/carousel/slides', {
+      const response = await fetch(`${apiBase}/api/carousel/slides`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(slideData),
@@ -160,7 +161,7 @@ export function useCarousel() {
   // Обновление слайда
   const updateSlide = async (id: number, slideData: Partial<CarouselSlide>) => {
     try {
-      const response = await fetch(`/api/carousel/slides/${id}`, {
+      const response = await fetch(`${apiBase}/api/carousel/slides/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(slideData),
@@ -188,7 +189,7 @@ export function useCarousel() {
   // Удаление слайда
   const deleteSlide = async (id: number) => {
     try {
-      const response = await fetch(`/api/carousel/slides/${id}`, {
+      const response = await fetch(`${apiBase}/api/carousel/slides/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
@@ -211,7 +212,7 @@ export function useCarousel() {
   // Переупорядочивание слайдов
   const reorderSlides = async (slideIds: number[]) => {
     try {
-      const response = await fetch('/api/carousel/slides/reorder', {
+      const response = await fetch(`${apiBase}/api/carousel/slides/reorder`, {
         method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify(slideIds),
