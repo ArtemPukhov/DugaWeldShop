@@ -4,6 +4,9 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import ru.dugaweld.www.services.UserService;
+import ru.dugaweld.www.models.User;
 
 import java.security.Key;
 import java.util.Date;
@@ -14,6 +17,9 @@ public class JwtUtil {
     private final Key key;
     private final long expirationTimeMs;
     private final long refreshExpirationTimeMs;
+    
+    @Autowired
+    private UserService userService;
 
     public JwtUtil(
             @Value("${jwt.secret}") String secret,
@@ -36,11 +42,16 @@ public class JwtUtil {
     }
     
     private String getRolesForUser(String username) {
-        // Для простоты возвращаем роль на основе username
-        // В реальном приложении это должно быть из базы данных
-        if ("admin".equals(username)) {
-            return "ROLE_ADMIN";
+        // Получаем роль из базы данных
+        try {
+            User user = userService.findByUsername(username);
+            if (user != null && user.getRole() != null) {
+                return "ROLE_" + user.getRole().name();
+            }
+        } catch (Exception e) {
+            System.err.println("Ошибка получения роли для пользователя " + username + ": " + e.getMessage());
         }
+        // По умолчанию возвращаем ROLE_USER
         return "ROLE_USER";
     }
 
