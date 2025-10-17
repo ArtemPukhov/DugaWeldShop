@@ -26,6 +26,14 @@ const nextConfig = {
         source: "/api/auth/:path*",
         destination: `${API_TARGET}/auth/:path*`,
       },
+      {
+        source: "/api/users/:path*",
+        destination: `${API_TARGET}/users/:path*`,
+      },
+      {
+        source: "/api/orders/:path*",
+        destination: `${API_TARGET}/orders/:path*`,
+      },
     ];
   },
   // Настройки для обработки файлов

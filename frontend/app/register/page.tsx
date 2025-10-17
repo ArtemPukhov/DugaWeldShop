@@ -68,9 +68,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_TARGET || 'http://127.0.0.1:8080';
-      
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -36,7 +36,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_TARGET || 'http://127.0.0.1:8080';
+  // Используем прокси роуты вместо прямых обращений к backend
+  const API_BASE_URL = '';
 
   // Функция для получения информации о пользователе
   const fetchUserInfo = async (): Promise<User | null> => {
@@ -44,7 +45,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const token = localStorage.getItem('accessToken');
       if (!token) return null;
 
-      const response = await fetch(`${API_BASE_URL}/users/me`, {
+      const response = await fetch('/api/users/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

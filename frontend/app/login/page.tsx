@@ -40,9 +40,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_TARGET || 'http://127.0.0.1:8080';
-      
-      const response = await fetch(`${API_BASE_URL}/auth/login-user`, {
+      const response = await fetch('/api/auth/login-user', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
