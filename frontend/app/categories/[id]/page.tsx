@@ -7,6 +7,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import CategoryList from "@/components/ui/CategoryList";
+import { useCart } from "@/contexts/CartContext";
 
 type Product = {
   id: number;
@@ -25,6 +26,7 @@ type Category = {
 
 export default function CategoryPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
+  const { addItem, items } = useCart();
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +93,32 @@ export default function CategoryPage({ params }: { params: Promise<{ id: string 
 
     return allProducts;
   }
+
+  // Функция для добавления товара в корзину
+  const handleAddToCart = (e: React.MouseEvent, product: Product) => {
+    e.preventDefault(); // Предотвращаем переход по ссылке
+    e.stopPropagation(); // Останавливаем всплытие события
+    
+    // Если товар уже в корзине, переходим в корзину
+    if (isInCart(product.id)) {
+      window.location.href = '/cart';
+      return;
+    }
+    
+    // Если товара нет в корзине, добавляем его
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl || '',
+      categoryId: product.categoryId
+    });
+  };
+
+  // Функция для проверки, есть ли товар в корзине
+  const isInCart = (productId: number) => {
+    return items.some(item => item.id === productId);
+  };
 
   if (loading) {
     return (
@@ -179,9 +207,21 @@ export default function CategoryPage({ params }: { params: Promise<{ id: string 
                     </div>
                     <div className="flex justify-between items-center mt-2">
                       <p className="text-gray-800 font-bold">{p.price.toLocaleString()} ₽</p>
-                      <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-4 py-2 text-sm bg-yellow-500 hover:bg-red-500 rounded-md">
-                        В корзину
-                      </button>
+                      {isInCart(p.id) ? (
+                        <Link 
+                          href="/cart"
+                          className="opacity-100 transition-all duration-300 px-4 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-md font-semibold"
+                        >
+                          Перейти в корзину
+                        </Link>
+                      ) : (
+                        <button 
+                          onClick={(e) => handleAddToCart(e, p)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-4 py-2 text-sm bg-yellow-500 hover:bg-red-500 text-white rounded-md font-semibold"
+                        >
+                          В корзину
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

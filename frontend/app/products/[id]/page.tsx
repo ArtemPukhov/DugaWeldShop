@@ -34,6 +34,13 @@ export default function ProductPage() {
 
   const handleAddToCart = () => {
     if (product) {
+      // Если товар уже в корзине, переходим в корзину
+      if (isInCart(product.id)) {
+        router.push('/cart');
+        return;
+      }
+      
+      // Если товара нет в корзине, добавляем его
       addItem({
         id: product.id,
         name: product.name,

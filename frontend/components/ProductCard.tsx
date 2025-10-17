@@ -80,10 +80,12 @@ export default function ProductCard({ product }: ProductCardProps) {
               Добавлено!
             </>
           ) : isInCart(product.id) ? (
-            <>
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              В корзине
-            </>
+            <Link href="/cart" className="w-full">
+              <div className="flex items-center justify-center">
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Перейти в корзину
+              </div>
+            </Link>
           ) : (
             <>
               <ShoppingCart className="w-4 h-4 mr-2" />

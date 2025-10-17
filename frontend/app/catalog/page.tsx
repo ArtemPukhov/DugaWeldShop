@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { getProductImageUrl, handleImageError } from "@/lib/imageUtils";
+import { useCart } from "@/contexts/CartContext";
 
 type Product = {
   id: number;
@@ -36,6 +37,7 @@ type FilterState = {
 };
 
 export default function CatalogPage() {
+  const { addItem, items } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,9 +125,25 @@ export default function CatalogPage() {
   };
 
   const handleAddToCart = (product: Product) => {
-    // Временная заглушка - можно добавить уведомление
-    console.log("Добавлено в корзину:", product);
-    alert(`Товар "${product.name}" добавлен в корзину!`);
+    // Если товар уже в корзине, переходим в корзину
+    if (isInCart(product.id)) {
+      window.location.href = '/cart';
+      return;
+    }
+    
+    // Если товара нет в корзине, добавляем его
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl || '',
+      categoryId: product.category?.id || 0
+    });
+  };
+
+  // Функция для проверки, есть ли товар в корзине
+  const isInCart = (productId: number) => {
+    return items.some(item => item.id === productId);
   };
 
   if (loading) {
@@ -350,12 +368,20 @@ export default function CatalogPage() {
                         )}
                       </div>
 
-                      <Button
-                        onClick={() => handleAddToCart(product)}
-                        className="w-full"
-                      >
-                        В корзину
-                      </Button>
+                      {isInCart(product.id) ? (
+                        <Link href="/cart" className="w-full">
+                          <Button className="w-full bg-green-500 hover:bg-green-600">
+                            Перейти в корзину
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button
+                          onClick={() => handleAddToCart(product)}
+                          className="w-full"
+                        >
+                          В корзину
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
