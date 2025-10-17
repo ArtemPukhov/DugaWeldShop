@@ -31,6 +31,22 @@ export default function ImageCarousel({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
 
+  // Нормализация ссылок MinIO: переводим истекающие presigned URL в стабильный прокси /api/files/{key}
+  const normalizeToProxy = (urlStr: string): string => {
+    try {
+      const url = new URL(urlStr);
+      const parts = url.pathname.split('/').filter(Boolean);
+      const idx = parts.indexOf('dugaweld-images');
+      if (idx >= 0 && parts.length > idx + 1) {
+        const key = parts.slice(idx + 1).join('/');
+        return `/api/files/${key}`;
+      }
+      return urlStr;
+    } catch {
+      return urlStr;
+    }
+  };
+
   // Фильтруем только активные слайды и сортируем по порядку
   const activeSlides = slides
     .filter(slide => slide.isActive)
@@ -84,7 +100,7 @@ export default function ImageCarousel({
   }
 
   const currentSlideData = activeSlides[currentSlide];
-  const imageUrl = getImageUrl(currentSlideData.imageUrl);
+  const imageUrl = normalizeToProxy(getImageUrl(currentSlideData.imageUrl));
 
   return (
     <div 

@@ -38,10 +38,10 @@ public class FileController {
             }
             
             String fileName = minIOService.uploadFile(file);
-            String fileUrl = minIOService.getFileUrl(fileName);
+            String stableProxyUrl = "/api/files/" + fileName;
             
             log.info("Файл '{}' успешно загружен", fileName);
-            return ResponseEntity.ok(fileUrl);
+            return ResponseEntity.ok(stableProxyUrl);
             
         } catch (Exception e) {
             log.error("Ошибка при загрузке файла: {}", e.getMessage());

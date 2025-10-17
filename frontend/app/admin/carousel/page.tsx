@@ -298,7 +298,18 @@ export default function CarouselAdminPage() {
             <Card key={`${slide.id}-${index}`} className="overflow-hidden">
               <div className="relative">
                 <img
-                  src={slide.imageUrl}
+                  src={(function(){
+                    try {
+                      const u = new URL(slide.imageUrl);
+                      const parts = u.pathname.split('/').filter(Boolean);
+                      const idx = parts.indexOf('dugaweld-images');
+                      if (idx >= 0 && parts.length > idx + 1) {
+                        const key = parts.slice(idx + 1).join('/');
+                        return `/api/files/${key}`;
+                      }
+                    } catch {}
+                    return slide.imageUrl;
+                  })()}
                   alt={slide.title}
                   className="w-full h-48 object-cover"
                 />
