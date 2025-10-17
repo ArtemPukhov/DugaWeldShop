@@ -17,13 +17,30 @@ public class UserService {
     }
 
     public User registerUser(String username, String password) {
+        return registerUser(username, password, null, null, null, null, null, null, null);
+    }
+
+    public User registerUser(String username, String password, String firstName, String lastName, 
+                           String email, String phone, String address, String city, String postalCode) {
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new RuntimeException("Пользователь уже существует");
+            throw new RuntimeException("Пользователь с таким именем уже существует");
         }
+        
+        if (email != null && !email.trim().isEmpty() && userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("Пользователь с таким email уже существует");
+        }
+        
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(Role.USER);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        user.setPhone(phone);
+        user.setAddress(address);
+        user.setCity(city);
+        user.setPostalCode(postalCode);
         return userRepository.save(user);
     }
 

@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
         categoryId: item.categoryId
       })),
       totalPrice: orderData.totalPrice,
-      customerInfo: orderData.customerInfo
+      customerInfo: orderData.customerInfo,
+      userId: orderData.userId || null // Передаем userId, если указан
     };
 
     // Отправляем заказ на backend

@@ -44,17 +44,25 @@ export async function POST(request: NextRequest) {
     const queryString = searchParams.toString();
     const url = `${API_BASE_URL}/orders${queryString ? `?${queryString}` : ''}`;
     
-    const body = await request.json();
+    const orderData = await request.json();
+    
+    // Преобразуем данные в формат, ожидаемый backend
+    const createOrderDto = {
+      items: orderData.items,
+      totalPrice: orderData.totalPrice,
+      customerInfo: orderData.customerInfo,
+      userId: orderData.userId || null // Передаем userId, если указан
+    };
     
     console.log('API Proxy POST - Request URL:', url);
-    console.log('API Proxy POST - Body:', body);
+    console.log('API Proxy POST - Body:', createOrderDto);
 
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(createOrderDto),
     });
 
     console.log('API Proxy POST - Response status:', response.status);

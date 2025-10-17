@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 013-add-user-to-orders
+      author: ai
+      changes:
+        - addColumn:
+            tableName: orders
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+                    foreignKeyName: fk_orders_user_id
+                    references: users(id)
+                    deleteCascade: false

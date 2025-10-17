@@ -24,6 +24,9 @@ public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
+    
+    @Autowired
+    private ru.dugaweld.www.repositories.UserRepository userRepository;
 
     public OrderDto createOrder(CreateOrderDto createOrderDto) {
         Order order = new Order();
@@ -33,6 +36,11 @@ public class OrderService {
         order.setStatus(Order.OrderStatus.PENDING);
         order.setOrderDate(LocalDateTime.now());
         order.setTotalPrice(createOrderDto.getTotalPrice());
+        
+        // Связываем заказ с пользователем, если указан userId
+        if (createOrderDto.getUserId() != null) {
+            userRepository.findById(createOrderDto.getUserId()).ifPresent(order::setUser);
+        }
         
         // Заполняем данные клиента
         CreateOrderDto.CustomerInfo customerInfo = createOrderDto.getCustomerInfo();

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -8,9 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, ArrowLeft, User } from 'lucide-react';
 
 interface OrderForm {
   firstName: string;
@@ -25,7 +26,9 @@ interface OrderForm {
 
 export default function CheckoutPage() {
   const { items, getTotalItems, getTotalPrice, clearCart } = useCart();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [formData, setFormData] = useState<OrderForm>({
@@ -38,6 +41,22 @@ export default function CheckoutPage() {
     postalCode: '',
     comment: '',
   });
+
+  // Заполняем форму данными пользователя, если он авторизован
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        city: user.city || '',
+        postalCode: user.postalCode || '',
+      }));
+    }
+  }, [isAuthenticated, user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -58,6 +77,7 @@ export default function CheckoutPage() {
         totalPrice: getTotalPrice(),
         customerInfo: formData,
         orderDate: new Date().toISOString(),
+        userId: isAuthenticated ? user?.id : null, // Добавляем ID пользователя, если авторизован
       };
 
       const response = await fetch('/api/orders-proxy', {
@@ -131,9 +151,25 @@ export default function CheckoutPage() {
       <div className="flex-1 max-w-6xl mx-auto w-full p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Оформление заказа</h1>
-          <p className="text-gray-600">
-            Заполните данные для доставки и подтвердите заказ
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-gray-600">
+              Заполните данные для доставки и подтвердите заказ
+            </p>
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-2 text-green-600">
+                <User className="w-5 h-5" />
+                <span className="text-sm font-medium">
+                  Вы вошли как {user?.firstName || user?.username}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2 text-blue-600">
+                <span className="text-sm">
+                  Заказ без регистрации
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

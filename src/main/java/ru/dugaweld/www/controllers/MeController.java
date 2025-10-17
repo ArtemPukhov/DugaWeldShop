@@ -1,31 +1,45 @@
-//package ru.dugaweld.www.controllers;
-//
-//import org.springframework.security.core.Authentication;
-//import org.springframework.security.core.GrantedAuthority;
-//import org.springframework.web.bind.annotation.GetMapping;
-//import org.springframework.web.bind.annotation.RequestMapping;
-//import org.springframework.web.bind.annotation.RestController;
-//
-//import java.util.List;
-//import java.util.Map;
-//
-//@RestController
-//@RequestMapping("/users")
-//public class MeController {
-//
-//    @GetMapping("/me")
-//    public Map<String, Object> me(Authentication auth) {
-//        if (auth == null) {
-//            return Map.of("authenticated", false);
-//        }
-//        List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
-//        return Map.of(
-//                "authenticated", true,
-//                "username", auth.getName(),
-//                "roles", roles
-//        );
-//    }
-//}
+package ru.dugaweld.www.controllers;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import ru.dugaweld.www.dto.UserDto;
+import ru.dugaweld.www.services.UserService;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/users")
+public class MeController {
+
+    @Autowired
+    private UserService userService;
+
+    @GetMapping("/me")
+    public ResponseEntity<?> me(Authentication auth) {
+        if (auth == null) {
+            return ResponseEntity.ok(Map.of("authenticated", false));
+        }
+        
+        try {
+            var user = userService.findByUsername(auth.getName());
+            if (user != null) {
+                UserDto userDto = UserDto.fromUser(user);
+                return ResponseEntity.ok(Map.of(
+                    "authenticated", true,
+                    "user", userDto
+                ));
+            } else {
+                return ResponseEntity.ok(Map.of("authenticated", false));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("authenticated", false));
+        }
+    }
+}
 //
 //
 //

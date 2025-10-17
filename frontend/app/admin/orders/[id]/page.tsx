@@ -123,12 +123,12 @@ export default function OrderDetailPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusMap: { [key: string]: { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' } } = {
-      PENDING: { label: 'Ожидает обработки', variant: 'secondary' },
-      CONFIRMED: { label: 'Подтвержден', variant: 'default' },
-      PROCESSING: { label: 'В обработке', variant: 'default' },
-      SHIPPED: { label: 'Отправлен', variant: 'default' },
-      DELIVERED: { label: 'Доставлен', variant: 'default' },
+    const statusMap: { [key: string]: { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' } } = {
+      PENDING: { label: 'Ожидает обработки', variant: 'pending' },
+      CONFIRMED: { label: 'Подтвержден', variant: 'confirmed' },
+      PROCESSING: { label: 'В обработке', variant: 'processing' },
+      SHIPPED: { label: 'Отправлен', variant: 'shipped' },
+      DELIVERED: { label: 'Доставлен', variant: 'delivered' },
       CANCELLED: { label: 'Отменен', variant: 'destructive' }
     };
 
@@ -184,9 +184,8 @@ export default function OrderDetailPage() {
         <div className="mb-8">
           <div className="flex items-center mb-4">
             <Button
-              variant="outline"
               onClick={() => router.push('/admin/orders')}
-              className="mr-4"
+              className="mr-4 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Назад
@@ -376,8 +375,7 @@ export default function OrderDetailPage() {
               <CardContent>
                 <Button
                   onClick={handleDeleteOrder}
-                  variant="destructive"
-                  className="w-full"
+                  className="w-full text-red-600 hover:text-red-700 border border-red-300 bg-white hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Удалить заказ

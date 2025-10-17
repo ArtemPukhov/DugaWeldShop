@@ -35,10 +35,24 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Регистрация нового пользователя", description = "Создает нового пользователя с логином и паролем")
-    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
-        User user = userService.registerUser(request.getUsername(), request.getPassword());
-        return ResponseEntity.ok("Пользователь " + user.getUsername() + " успешно зарегистрирован!");
+    @Operation(summary = "Регистрация нового пользователя", description = "Создает нового пользователя с логином, паролем и дополнительной информацией")
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        try {
+            User user = userService.registerUser(
+                request.getUsername(), 
+                request.getPassword(),
+                request.getFirstName(),
+                request.getLastName(),
+                request.getEmail(),
+                request.getPhone(),
+                request.getAddress(),
+                request.getCity(),
+                request.getPostalCode()
+            );
+            return ResponseEntity.ok("Пользователь " + user.getUsername() + " успешно зарегистрирован!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/login-user")

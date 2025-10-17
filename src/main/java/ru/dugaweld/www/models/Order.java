@@ -57,6 +57,11 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 
+    // Связь с пользователем (опционально для гостевых заказов)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     // Статусы заказа
     public enum OrderStatus {
         PENDING("Ожидает обработки"),

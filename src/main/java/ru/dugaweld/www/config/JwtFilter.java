@@ -32,15 +32,18 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
+        
         if (header == null || !header.startsWith("Bearer ")) {
             chain.doFilter(request, response);
             return;
         }
 
         String token = header.substring(7);
+        
         if (jwtUtil.validateToken(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
             String username = jwtUtil.extractUsername(token);
             String roles = jwtUtil.extractRoles(token);
+            
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             
             // Создаем authorities на основе ролей из токена

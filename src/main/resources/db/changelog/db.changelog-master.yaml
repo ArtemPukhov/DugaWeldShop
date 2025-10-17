@@ -20,5 +20,9 @@ databaseChangeLog:
   - include:
       file: classpath:db/changelog/changes/011-create-order-items.yaml
   - include:
+      file: classpath:db/changelog/changes/012-update-users-table.yaml
+  - include:
+      file: classpath:db/changelog/changes/013-add-user-to-orders.yaml
+  - include:
       file: classpath:db/changelog/db.changelog-1.1.xml
 

@@ -10,6 +10,7 @@ public class CreateOrderDto {
     private List<OrderItemRequest> items;
     private BigDecimal totalPrice;
     private CustomerInfo customerInfo;
+    private Long userId; // ID пользователя, если заказ делается зарегистрированным пользователем
 
     @Data
     public static class OrderItemRequest {

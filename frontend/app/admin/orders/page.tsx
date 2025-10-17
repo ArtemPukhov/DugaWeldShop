@@ -85,12 +85,12 @@ export default function OrdersAdminPage() {
   
   // Статусы заказов
   const orderStatuses = [
-    { value: 'PENDING', label: 'Ожидает обработки', color: 'bg-yellow-100 text-yellow-800' },
-    { value: 'CONFIRMED', label: 'Подтвержден', color: 'bg-blue-100 text-blue-800' },
-    { value: 'PROCESSING', label: 'В обработке', color: 'bg-purple-100 text-purple-800' },
-    { value: 'SHIPPED', label: 'Отправлен', color: 'bg-indigo-100 text-indigo-800' },
-    { value: 'DELIVERED', label: 'Доставлен', color: 'bg-green-100 text-green-800' },
-    { value: 'CANCELLED', label: 'Отменен', color: 'bg-red-100 text-red-800' },
+    { value: 'PENDING', label: 'Ожидает обработки', color: 'bg-yellow-200 text-yellow-900 border border-yellow-300' },
+    { value: 'CONFIRMED', label: 'Подтвержден', color: 'bg-blue-200 text-blue-900 border border-blue-300' },
+    { value: 'PROCESSING', label: 'В обработке', color: 'bg-purple-200 text-purple-900 border border-purple-300' },
+    { value: 'SHIPPED', label: 'Отправлен', color: 'bg-indigo-200 text-indigo-900 border border-indigo-300' },
+    { value: 'DELIVERED', label: 'Доставлен', color: 'bg-green-200 text-green-900 border border-green-300' },
+    { value: 'CANCELLED', label: 'Отменен', color: 'bg-red-200 text-red-900 border border-red-300' },
   ];
 
   useEffect(() => {
