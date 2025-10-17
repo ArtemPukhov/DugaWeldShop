@@ -1,7 +1,7 @@
 // app/catalog/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -37,7 +37,8 @@ type FilterState = {
   search: string;
 };
 
-export default function CatalogPage() {
+// Компонент для работы с поиском (нужен Suspense)
+function CatalogContent() {
   const { addItem, items } = useCart();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -427,5 +428,22 @@ export default function CatalogPage() {
         <Footer />
       </div>
     </>
+  );
+}
+
+// Главный компонент с Suspense
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-gray-500">Загрузка каталога...</p>
+        </div>
+        <Footer />
+      </div>
+    }>
+      <CatalogContent />
+    </Suspense>
   );
 }
