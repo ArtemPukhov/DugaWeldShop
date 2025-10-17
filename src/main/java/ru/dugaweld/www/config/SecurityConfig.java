@@ -32,6 +32,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/**",
+                                "/users/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -46,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/orders/**").permitAll() // Разрешить удаление заказов без авторизации
                         .requestMatchers(HttpMethod.GET, "/api/carousel/**").permitAll() // Только GET разрешен без авторизации
                         .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // GET файлов без авторизации
+                        .requestMatchers(HttpMethod.POST, "/auth/**").permitAll() // Разрешить все POST запросы к auth
                         .requestMatchers(HttpMethod.POST, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/files/upload").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")

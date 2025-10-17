@@ -7,6 +7,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class CorsConfig {
@@ -14,13 +15,26 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000", "http://127.0.0.1:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Разрешаем запросы с любых источников
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        
+        // Разрешаем все HTTP методы
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
+        
+        // Разрешаем все заголовки
+        configuration.setAllowedHeaders(List.of("*"));
+        
+        // Разрешаем передачу cookies и авторизационных заголовков
         configuration.setAllowCredentials(true);
         
+        // Время кеширования preflight запросов
+        configuration.setMaxAge(3600L);
+        
+        // Применяем конфигурацию ко всем путям
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+        
         return source;
     }
 }
