@@ -10,7 +10,7 @@ import CategoryList from "@/components/ui/CategoryList";
 import ProductDescriptionView from "@/components/ProductDescriptionView";
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Check } from 'lucide-react';
+import { ShoppingCart, Check, Plus, Minus } from 'lucide-react';
 
 type Product = {
   id: number;
@@ -30,7 +30,7 @@ export default function ProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications'>('description');
   const [addedToCart, setAddedToCart] = useState(false);
-  const { addItem, isInCart } = useCart();
+  const { addItem, isInCart, getItemQuantity, updateQuantity } = useCart();
 
   const handleAddToCart = () => {
     if (product) {
@@ -50,6 +50,25 @@ export default function ProductPage() {
       });
       setAddedToCart(true);
       setTimeout(() => setAddedToCart(false), 2000);
+    }
+  };
+
+  const handleIncreaseQuantity = () => {
+    if (product) {
+      const currentQuantity = getItemQuantity(product.id);
+      updateQuantity(product.id, currentQuantity + 1);
+    }
+  };
+
+  const handleDecreaseQuantity = () => {
+    if (product) {
+      const currentQuantity = getItemQuantity(product.id);
+      if (currentQuantity > 1) {
+        updateQuantity(product.id, currentQuantity - 1);
+      } else {
+        // Если количество станет 0, удаляем товар из корзины
+        updateQuantity(product.id, 0);
+      }
     }
   };
 
@@ -157,33 +176,58 @@ export default function ProductPage() {
                 {product.price.toLocaleString()} ₽
               </p>
               <div className="flex gap-4 mt-4">
-                <Button
-                  onClick={handleAddToCart}
-                  className={`font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center ${
-                    addedToCart 
-                      ? 'bg-green-500 hover:bg-green-600 text-white' 
-                      : isInCart(product.id)
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                      : 'bg-yellow-500 hover:bg-yellow-600 text-black'
-                  }`}
-                >
-                  {addedToCart ? (
-                    <>
-                      <Check className="w-5 h-5 mr-2" />
-                      Добавлено!
-                    </>
-                  ) : isInCart(product.id) ? (
-                    <>
-                      <ShoppingCart className="w-5 h-5 mr-2" />
-                      В корзине
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-5 h-5 mr-2" />
-                      В корзину
-                    </>
-                  )}
-                </Button>
+                {product && isInCart(product.id) ? (
+                  // Показываем управление количеством, если товар в корзине
+                  <div className="flex items-center gap-3 bg-blue-50 rounded-xl p-3">
+                    <Button
+                      onClick={handleDecreaseQuantity}
+                      className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all duration-300"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </Button>
+                    <div className="flex flex-col items-center">
+                      <span className="text-lg font-semibold text-gray-900">
+                        {getItemQuantity(product.id)}
+                      </span>
+                      <span className="text-xs text-gray-600">шт. в корзине</span>
+                    </div>
+                    <Button
+                      onClick={handleIncreaseQuantity}
+                      className="w-10 h-10 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all duration-300"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      onClick={() => router.push('/cart')}
+                      className="ml-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105 flex items-center"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Купить
+                    </Button>
+                  </div>
+                ) : (
+                  // Показываем кнопку добавления, если товара нет в корзине
+                  <Button
+                    onClick={handleAddToCart}
+                    className={`font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center ${
+                      addedToCart 
+                        ? 'bg-green-500 hover:bg-green-600 text-white' 
+                        : 'bg-yellow-500 hover:bg-yellow-600 text-black'
+                    }`}
+                  >
+                    {addedToCart ? (
+                      <>
+                        <Check className="w-5 h-5 mr-2" />
+                        Добавлено!
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-5 h-5 mr-2" />
+                        В корзину
+                      </>
+                    )}
+                  </Button>
+                )}
                 <Link
                   href="/"
                   className="bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 flex items-center"
