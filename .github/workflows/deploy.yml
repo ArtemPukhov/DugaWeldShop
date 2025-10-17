@@ -84,6 +84,12 @@ jobs:
             BACKEND_SERVICE=/etc/systemd/system/dugaweld.service
             FRONTEND_SERVICE=/etc/systemd/system/frontend.service
 
+            # API target for frontend (fallback to localhost if secret is empty)
+            API_TARGET="${{ secrets.NEXT_PUBLIC_API_TARGET }}"
+            if [ -z "$API_TARGET" ]; then
+              API_TARGET="http://127.0.0.1:8080"
+            fi
+
             echo "Stopping services..."
             sudo systemctl stop dugaweld || true
             sudo systemctl stop frontend || true
@@ -109,6 +115,7 @@ jobs:
             Environment="MINIO_ACCESS_KEY=${{ secrets.MINIO_ACCESS_KEY }}"
             Environment="MINIO_SECRET_KEY=${{ secrets.MINIO_SECRET_KEY }}"
             Environment="MINIO_BUCKET_NAME=${{ secrets.MINIO_BUCKET_NAME }}"
+            Environment="SPRING_PROFILES_ACTIVE=production"
 
             Restart=always
 
@@ -126,6 +133,10 @@ jobs:
             User=${{ secrets.SERVER_USER }}
             WorkingDirectory=$APP_DIR/$FRONTEND_DIR
             ExecStart=/usr/bin/npm run start
+            Environment="NODE_ENV=production"
+            Environment="NEXT_PUBLIC_API_TARGET=$API_TARGET"
+            Environment="PORT=3000"
+            Environment="HOST=0.0.0.0"
             Restart=always
 
             [Install]
@@ -136,7 +147,7 @@ jobs:
             cd $APP_DIR/$FRONTEND_DIR
             rm -rf node_modules .next
             npm ci --legacy-peer-deps
-            NEXT_IGNORE_ESLINT=1 npm run build
+            NEXT_PUBLIC_API_TARGET="$API_TARGET" NEXT_IGNORE_ESLINT=1 npm run build
 
             echo "Reloading systemd and starting services..."
             sudo systemctl daemon-reload

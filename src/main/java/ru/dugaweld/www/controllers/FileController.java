@@ -28,25 +28,25 @@ public class FileController {
     
     @PostMapping("/upload")
     @Operation(summary = "Загрузка файла в MinIO")
-    public ResponseEntity<String> uploadFile(
+    public ResponseEntity<java.util.Map<String, String>> uploadFile(
             @Parameter(description = "Файл для загрузки")
             @RequestParam("file") MultipartFile file) {
         
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("Файл не может быть пустым");
+                return ResponseEntity.badRequest().body(java.util.Map.of("error", "Файл не может быть пустым"));
             }
             
             String fileName = minIOService.uploadFile(file);
             String stableProxyUrl = "/api/files/" + fileName;
             
             log.info("Файл '{}' успешно загружен", fileName);
-            return ResponseEntity.ok(stableProxyUrl);
+            return ResponseEntity.ok(java.util.Map.of("url", stableProxyUrl));
             
         } catch (Exception e) {
             log.error("Ошибка при загрузке файла: {}", e.getMessage());
             return ResponseEntity.internalServerError()
-                    .body("Ошибка при загрузке файла: " + e.getMessage());
+                    .body(java.util.Map.of("error", "Ошибка при загрузке файла: " + e.getMessage()));
         }
     }
     
