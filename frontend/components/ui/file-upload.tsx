@@ -76,7 +76,8 @@ export function FileUpload({
           console.log('Токен для загрузки файла:', token ? 'Есть' : 'Отсутствует');
           console.log('Токен (первые 20 символов):', token ? token.substring(0, 20) + '...' : 'null');
 
-          const response = await fetch('/api/files/upload', {
+          const apiBase = process.env.NEXT_PUBLIC_API_TARGET || '';
+          const response = await fetch(`${apiBase}/api/files/upload`, {
             method: 'POST',
             body: formData,
             headers: {
