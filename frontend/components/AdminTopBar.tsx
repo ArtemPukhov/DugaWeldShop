@@ -75,6 +75,7 @@ export default function AdminTopBar() {
           </Link>
         </div>
         <div className="flex items-center gap-3">
+          <Link href="/" className="px-3 py-1 rounded border border-gray-300 bg-white text-black hover:bg-gray-100" title="Перейти на главную страницу">На главную</Link>
           {username ? (
             <>
               <span className="text-sm text-gray-700 font-medium">{username}</span>

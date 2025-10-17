@@ -10,6 +10,7 @@ import CategoryHierarchy from "@/components/ui/CategoryHierarchy";
 import ImageCarousel from "@/components/ImageCarousel";
 import HeroSection from "@/components/HeroSection";
 import { useCarousel } from "@/hooks/useCarousel";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Category = {
   id: number;
@@ -27,6 +28,7 @@ export default function HomePage() {
   
   // Хук для управления каруселью
   const { slides: carouselSlides, loading: carouselLoading, carouselEnabled } = useCarousel();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
     fetch(`/api/categories/root`)
@@ -54,6 +56,17 @@ export default function HomePage() {
       </Head>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
+
+        {isAuthenticated && !isLoading && (user?.role === 'ADMIN' || user?.role === 'ROLE_ADMIN') && (
+          <div className="bg-amber-50 border-b border-amber-200">
+            <div className="max-w-7xl mx-auto px-6 sm:px-10 py-3 text-sm flex items-center justify-between">
+              <span className="text-amber-800">Режим администратора доступен</span>
+              <Link href="/admin" className="inline-block bg-amber-500 hover:bg-amber-600 text-black font-semibold px-4 py-2 rounded-md transition-colors">
+                Перейти в админ-панель
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Hero блок с заголовком и слоганом */}
         <HeroSection />
