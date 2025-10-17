@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { getProductImageUrl, handleImageError } from "@/lib/imageUtils";
 import { useCart } from "@/contexts/CartContext";
+import { useSearchParams } from "next/navigation";
 
 type Product = {
   id: number;
@@ -38,6 +39,7 @@ type FilterState = {
 
 export default function CatalogPage() {
   const { addItem, items } = useCart();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,14 @@ export default function CatalogPage() {
     sortBy: "name",
     search: ""
   });
+
+  useEffect(() => {
+    // Получаем параметр поиска из URL
+    const searchQuery = searchParams.get('search');
+    if (searchQuery) {
+      setFilters(prev => ({ ...prev, search: searchQuery }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     // Загрузка товаров
