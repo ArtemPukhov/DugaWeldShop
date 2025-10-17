@@ -17,6 +17,12 @@ const nextConfig = {
         pathname: '/dugaweld-images/**',
       },
       {
+        protocol: 'http',
+        hostname: '141.105.71.70',
+        port: '9000',
+        pathname: '/dugaweld-images/**',
+      },
+      {
         protocol: 'https',
         hostname: '**',
       },
