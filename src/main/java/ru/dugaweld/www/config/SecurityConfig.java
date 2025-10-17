@@ -35,23 +35,24 @@ public class SecurityConfig {
                                 "/users/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/products/**",
-                                "/categories/**",
-                                "/orders/**"
+                                "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/**").permitAll() // Все GET запросы разрешены
                         .requestMatchers(HttpMethod.POST, "/orders/**").permitAll() // Разрешить создание заказов без авторизации
                         .requestMatchers(HttpMethod.PUT, "/orders/**").permitAll() // Разрешить изменение заказов без авторизации
                         .requestMatchers(HttpMethod.DELETE, "/orders/**").permitAll() // Разрешить удаление заказов без авторизации
-                        .requestMatchers(HttpMethod.GET, "/api/carousel/**").permitAll() // Только GET разрешен без авторизации
-                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll() // GET файлов без авторизации
                         .requestMatchers(HttpMethod.POST, "/auth/**").permitAll() // Разрешить все POST запросы к auth
-                        .requestMatchers(HttpMethod.POST, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasAuthority("ROLE_ADMIN") // Создание/изменение товаров и изображений только для ADMIN
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/categories/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/categories/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/categories/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/carousel/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/carousel/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/carousel/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/files/upload").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/products/**", "/categories/**", "/api/carousel/**").hasAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

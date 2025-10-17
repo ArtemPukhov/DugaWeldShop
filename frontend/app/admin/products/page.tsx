@@ -5,6 +5,7 @@ import { apiFetch, apiFetchForm, apiFetchJSON, apiDeleteProductsBulk, apiMovePro
 import AdminTopBar from "@/components/AdminTopBar";
 import { CsvImport } from "@/components/CsvImport";
 import ProductDescriptionEditor from "@/components/ProductDescriptionEditor";
+import ProductImagesManager from "@/components/ProductImagesManager";
 
 type Category = { id: number; name: string; imageUrl?: string; };
 type Product = {
@@ -413,6 +414,16 @@ export default function AdminProductsPage() {
           )}
         </div>
       </form>
+
+      {/* Менеджер изображений (только при редактировании) */}
+      {editingId && (
+        <div className="border p-4 rounded bg-gray-50">
+          <ProductImagesManager 
+            productId={editingId} 
+            onImagesUpdate={fetchData}
+          />
+        </div>
+      )}
 
       {/* Фильтр по категориям */}
       <div className="bg-gray-50 p-4 rounded-lg">

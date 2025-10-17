@@ -2,6 +2,26 @@
 const API_TARGET = process.env.NEXT_PUBLIC_API_TARGET || "http://127.0.0.1:8080";
 
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '9000',
+        pathname: '/dugaweld-images/**',
+      },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '9000',
+        pathname: '/dugaweld-images/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
   async rewrites() {
     return [
       // Для endpoints с префиксом /api (carousel, files)

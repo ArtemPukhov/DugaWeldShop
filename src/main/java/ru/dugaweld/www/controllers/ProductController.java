@@ -254,6 +254,50 @@ public class ProductController {
             return ResponseEntity.internalServerError().body("Ошибка при переносе: " + e.getMessage());
         }
     }
+    
+    // Эндпоинты для работы с изображениями товаров
+    
+    @PostMapping("/{productId}/images")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ru.dugaweld.www.dto.ProductImageDto> addProductImage(
+            @PathVariable Long productId,
+            @RequestParam("image") MultipartFile image,
+            @RequestParam(value = "displayOrder", required = false, defaultValue = "0") Integer displayOrder,
+            @RequestParam(value = "isPrimary", required = false, defaultValue = "false") Boolean isPrimary
+    ) {
+        try {
+            log.info("Добавление изображения к товару ID: {}", productId);
+            ru.dugaweld.www.dto.ProductImageDto imageDto = productService.addProductImage(productId, image, displayOrder, isPrimary);
+            return ResponseEntity.ok(imageDto);
+        } catch (Exception e) {
+            log.error("Ошибка при добавлении изображения", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @GetMapping("/{productId}/images")
+    public ResponseEntity<List<ru.dugaweld.www.dto.ProductImageDto>> getProductImages(@PathVariable Long productId) {
+        try {
+            List<ru.dugaweld.www.dto.ProductImageDto> images = productService.getProductImages(productId);
+            return ResponseEntity.ok(images);
+        } catch (Exception e) {
+            log.error("Ошибка при получении изображений товара", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
+    @DeleteMapping("/images/{imageId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteProductImage(@PathVariable Long imageId) {
+        try {
+            log.info("Удаление изображения ID: {}", imageId);
+            productService.deleteProductImage(imageId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Ошибка при удалении изображения", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }
 
 

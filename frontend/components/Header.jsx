@@ -60,7 +60,7 @@ export default function Header() {
         ) : (
           <div className="flex items-center space-x-2">
             <Link href="/login">
-              <Button variant="outline" size="sm" className="text-white border-white hover:bg-white hover:text-black">
+              <Button variant="outline" size="sm" className="bg-white text-black border-white hover:bg-gray-100 hover:text-black">
                 Войти
               </Button>
             </Link>

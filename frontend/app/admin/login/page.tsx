@@ -16,11 +16,27 @@ export default function AdminLoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await apiFetchJSON<{ token: string; refreshToken?: string }>("/auth/login-user", "POST", {
+      const res = await apiFetchJSON<{ accessToken?: string; token?: string; refreshToken?: string }>("/auth/login-user", "POST", {
         username,
         password,
       });
-      saveToken(res.token);
+      
+      // Backend возвращает accessToken, но старый код ожидал token
+      const tokenToSave = res.accessToken || res.token;
+      
+      if (!tokenToSave) {
+        throw new Error("Токен не получен от сервера");
+      }
+      
+      // Декодируем токен для проверки
+      try {
+        const payload = JSON.parse(atob(tokenToSave.split('.')[1]));
+        console.log('🔑 Вошли как:', payload.sub, '| Роль:', payload.roles);
+      } catch (e) {
+        console.error('Ошибка декодирования токена:', e);
+      }
+      
+      saveToken(tokenToSave);
       if (res.refreshToken) saveRefreshToken(res.refreshToken);
       router.push("/admin");
     } catch (e: any) {

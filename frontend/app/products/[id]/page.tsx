@@ -8,9 +8,17 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CategoryList from "@/components/ui/CategoryList";
 import ProductDescriptionView from "@/components/ProductDescriptionView";
+import ProductImageGallery from "@/components/ProductImageGallery";
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Check, Plus, Minus } from 'lucide-react';
+
+type ProductImage = {
+  id: number;
+  imageUrl: string;
+  displayOrder: number;
+  isPrimary: boolean;
+};
 
 type Product = {
   id: number;
@@ -20,6 +28,7 @@ type Product = {
   imageUrl?: string;
   categoryId: number;
   specifications?: string;
+  images?: ProductImage[];
 };
 
 export default function ProductPage() {
@@ -158,15 +167,20 @@ export default function ProductPage() {
         {/* Справа: карточка товара */}
         <div className="flex-1 bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row gap-6 md:gap-10 p-6">
           <div className="flex-1 flex flex-col gap-4">
-            <img
-              src={product.imageUrl || '/placeholder.png'}
-              alt={product.name}
-              className="w-full h-96 object-contain rounded-2xl" // изменил на object-contain
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = '/placeholder.png';
-              }}
-            />
+            {/* Используем галерею изображений, если есть несколько изображений, иначе показываем одно */}
+            {product.images && product.images.length > 0 ? (
+              <ProductImageGallery images={product.images} productName={product.name} />
+            ) : (
+              <img
+                src={product.imageUrl || '/placeholder.png'}
+                alt={product.name}
+                className="w-full h-96 object-contain rounded-2xl"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.png';
+                }}
+              />
+            )}
           </div>
 
           <div className="flex-1 flex flex-col justify-between p-4 md:p-6">

@@ -55,14 +55,34 @@ export default function LoginPage() {
 
       const data = await response.json();
       
+      console.log('✅ Успешный ответ от сервера:', {
+        hasAccessToken: !!data.accessToken,
+        hasRefreshToken: !!data.refreshToken
+      });
+      
+      // Декодируем токен для проверки
+      if (data.accessToken) {
+        try {
+          const payload = JSON.parse(atob(data.accessToken.split('.')[1]));
+          console.log('🔑 Полученный токен:', {
+            sub: payload.sub,
+            roles: payload.roles
+          });
+        } catch (e) {
+          console.error('Ошибка декодирования токена:', e);
+        }
+      }
+      
       // Используем AuthContext для входа
       await login(data.accessToken, data.refreshToken);
+      
+      console.log('✅ Токены сохранены в AuthContext');
       
       // Перенаправляем на главную страницу
       router.push('/');
 
     } catch (error) {
-      console.error('Ошибка при входе:', error);
+      console.error('❌ Ошибка при входе:', error);
       setError(error instanceof Error ? error.message : 'Произошла ошибка при входе');
     } finally {
       setIsSubmitting(false);

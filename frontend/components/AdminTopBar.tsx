@@ -77,11 +77,11 @@ export default function AdminTopBar() {
         <div className="flex items-center gap-3">
           {username ? (
             <>
-              <span className="text-sm text-gray-700">{username}</span>
-              <button onClick={handleLogout} className="px-3 py-1 rounded border">Выйти</button>
+              <span className="text-sm text-gray-700 font-medium">{username}</span>
+              <button onClick={handleLogout} className="px-3 py-1 rounded border border-gray-300 bg-white text-black hover:bg-gray-100">Выйти</button>
             </>
           ) : (
-            <Link href="/admin/login" className="px-3 py-1 rounded border">Войти</Link>
+            <Link href="/admin/login" className="px-3 py-1 rounded border border-gray-300 bg-white text-black hover:bg-gray-100">Войти</Link>
           )}
         </div>
       </div>

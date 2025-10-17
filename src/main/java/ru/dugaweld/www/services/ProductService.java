@@ -25,6 +25,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final MinIOService minIOService;
+    private final ru.dugaweld.www.repositories.ProductImageRepository productImageRepository;
     
     @Value("${saveImagesPath}")
     private String saveImagesPath;
@@ -35,10 +36,12 @@ public class ProductService {
 
     public ProductService(ProductRepository productRepository, 
                          CategoryRepository categoryRepository,
-                         MinIOService minIOService) {
+                         MinIOService minIOService,
+                         ru.dugaweld.www.repositories.ProductImageRepository productImageRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.minIOService = minIOService;
+        this.productImageRepository = productImageRepository;
     }
 
     public List<ProductDto> findAll() {
@@ -236,7 +239,38 @@ public class ProductService {
             dto.setImageUrl(null);
         }
         
+        // Преобразуем изображения товара
+        if (product.getImages() != null && !product.getImages().isEmpty()) {
+            dto.setImages(product.getImages().stream()
+                .map(this::productImageToDto)
+                .collect(Collectors.toList()));
+        }
+        
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
+        return dto;
+    }
+    
+    private ru.dugaweld.www.dto.ProductImageDto productImageToDto(ru.dugaweld.www.models.ProductImage image) {
+        ru.dugaweld.www.dto.ProductImageDto dto = new ru.dugaweld.www.dto.ProductImageDto();
+        dto.setId(image.getId());
+        dto.setDisplayOrder(image.getDisplayOrder());
+        dto.setIsPrimary(image.getIsPrimary());
+        
+        // Генерируем полный URL для изображения
+        if (image.getImageUrl() != null && !image.getImageUrl().isEmpty()) {
+            if (image.getImageUrl().startsWith("http")) {
+                dto.setImageUrl(image.getImageUrl());
+            } else {
+                try {
+                    String fullUrl = minIOService.getFileUrl(image.getImageUrl());
+                    dto.setImageUrl(fullUrl);
+                } catch (Exception e) {
+                    log.warn("Не удалось сгенерировать URL для изображения '{}': {}", image.getImageUrl(), e.getMessage());
+                    dto.setImageUrl(image.getImageUrl());
+                }
+            }
+        }
+        
         return dto;
     }
 
@@ -325,6 +359,64 @@ public class ProductService {
         }
         
         log.info("Очистка завершена. Обновлено товаров: {}", updatedCount);
+    }
+
+    /**
+     * Добавление изображения к товару
+     */
+    public ru.dugaweld.www.dto.ProductImageDto addProductImage(Long productId, MultipartFile image, Integer displayOrder, Boolean isPrimary) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new IllegalArgumentException("Товар с ID " + productId + " не найден"));
+        
+        String fileName = uploadImageToMinIO(image);
+        
+        ru.dugaweld.www.models.ProductImage productImage = new ru.dugaweld.www.models.ProductImage();
+        productImage.setProduct(product);
+        productImage.setImageUrl(fileName);
+        productImage.setDisplayOrder(displayOrder != null ? displayOrder : 0);
+        productImage.setIsPrimary(isPrimary != null ? isPrimary : false);
+        
+        productImage = productImageRepository.save(productImage);
+        log.info("Изображение добавлено к товару ID: {}", productId);
+        
+        return productImageToDto(productImage);
+    }
+    
+    /**
+     * Удаление изображения товара
+     */
+    public void deleteProductImage(Long imageId) {
+        ru.dugaweld.www.models.ProductImage image = productImageRepository.findById(imageId)
+            .orElseThrow(() -> new IllegalArgumentException("Изображение с ID " + imageId + " не найдено"));
+        
+        // Удаляем файл из MinIO
+        if (image.getImageUrl() != null && !image.getImageUrl().isEmpty()) {
+            try {
+                String fileName = image.getImageUrl().startsWith("http") 
+                    ? extractFileNameFromUrl(image.getImageUrl()) 
+                    : image.getImageUrl();
+                    
+                if (fileName != null && !fileName.isEmpty()) {
+                    minIOService.deleteFile(fileName);
+                    log.info("Файл изображения '{}' удален из MinIO", fileName);
+                }
+            } catch (Exception e) {
+                log.error("Ошибка при удалении файла изображения: {}", e.getMessage());
+            }
+        }
+        
+        productImageRepository.deleteById(imageId);
+        log.info("Изображение ID: {} удалено", imageId);
+    }
+    
+    /**
+     * Получение всех изображений товара
+     */
+    public List<ru.dugaweld.www.dto.ProductImageDto> getProductImages(Long productId) {
+        List<ru.dugaweld.www.models.ProductImage> images = productImageRepository.findByProductIdOrderByDisplayOrderAsc(productId);
+        return images.stream()
+            .map(this::productImageToDto)
+            .collect(Collectors.toList());
     }
 
     /**

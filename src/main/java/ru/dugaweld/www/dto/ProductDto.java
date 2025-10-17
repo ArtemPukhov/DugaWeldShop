@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @RequiredArgsConstructor
@@ -26,6 +28,8 @@ public class ProductDto {
 
     @NotNull
     private Long categoryId;
+
+    private List<ProductImageDto> images = new ArrayList<>();
 
 }
 
