@@ -48,6 +48,14 @@ public class ProductService {
         return productRepository.findAll().stream().map(this::toDto).collect(Collectors.toList());
     }
 
+    public List<ProductDto> searchByNameOrDescription(String query) {
+        return productRepository
+                .findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
     public List<ProductDto> findByCategory(Long categoryId) {
         return productRepository.findByCategoryId(categoryId).stream().map(this::toDto).collect(Collectors.toList());
     }

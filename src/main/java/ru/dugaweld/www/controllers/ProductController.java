@@ -34,9 +34,15 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<ProductDto> all() {
+    public List<ProductDto> all(@RequestParam(required = false) String query) {
         log.info("Получение товаров");
-        List<ProductDto> products = productService.findAll();
+        List<ProductDto> products;
+        if (query != null && !query.isBlank()) {
+            log.info("Получение списка товаров. query={}", query);
+            products = productService.searchByNameOrDescription(query);
+        } else {
+            products = productService.findAll();
+        }
         log.info("Найдено товаров: {}", products.size());
         for (ProductDto product : products) {
             System.out.println("Название: " + product.getName());
