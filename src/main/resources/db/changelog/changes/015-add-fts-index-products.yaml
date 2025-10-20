@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 015-add-fts-index-products
+      author: ai
+      changes:
+        - sql:
+            comment: Create GIN index for Russian full-text search on products(name, description)
+            splitStatements: false
+            sql: |
+              CREATE INDEX IF NOT EXISTS idx_products_fts_ru
+              ON products
+              USING GIN (
+                to_tsvector('russian', coalesce(name, '') || ' ' || coalesce(description, ''))
+              );
+
