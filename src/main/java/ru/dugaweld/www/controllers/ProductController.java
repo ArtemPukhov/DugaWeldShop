@@ -39,7 +39,8 @@ public class ProductController {
         List<ProductDto> products;
         if (query != null && !query.isBlank()) {
             log.info("Получение списка товаров. query={}", query);
-            products = productService.searchByNameOrDescription(query);
+            // Используем полнотекстовый поиск PostgreSQL с русской морфологией
+            products = productService.searchFullText(query);
         } else {
             products = productService.findAll();
         }

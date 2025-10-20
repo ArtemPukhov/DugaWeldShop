@@ -56,6 +56,14 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    public List<ProductDto> searchFullText(String query) {
+        return productRepository
+                .searchFullText(query)
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+
     public List<ProductDto> findByCategory(Long categoryId) {
         return productRepository.findByCategoryId(categoryId).stream().map(this::toDto).collect(Collectors.toList());
     }

@@ -26,5 +26,7 @@ databaseChangeLog:
   - include:
       file: classpath:db/changelog/changes/014-create-product-images.yaml
   - include:
+      file: classpath:db/changelog/changes/015-add-fts-index-products.yaml
+  - include:
       file: classpath:db/changelog/db.changelog-1.1.xml
 
