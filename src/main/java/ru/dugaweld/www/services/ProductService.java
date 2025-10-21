@@ -33,6 +33,8 @@ public class ProductService {
     private String getImagesPath;
     @Value("${minio.endpoint}")
     private String minioEndpoint;
+    @Value("${frontend.base-url:http://localhost:3000}")
+    private String frontendBaseUrl;
 
     public ProductService(ProductRepository productRepository, 
                          CategoryRepository categoryRepository,
@@ -235,6 +237,14 @@ public class ProductService {
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
         dto.setSpecifications(product.getSpecifications());
+        // Добавляем абсолютную ссылку на страницу товара фронтенда
+        if (product.getId() != null) {
+            String base = frontendBaseUrl != null ? frontendBaseUrl : "";
+            if (base.endsWith("/")) {
+                base = base.substring(0, base.length() - 1);
+            }
+            dto.setLink(base + "/products/" + product.getId());
+        }
         
         // Если imageUrl содержит только имя файла, генерируем полный URL
         if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {

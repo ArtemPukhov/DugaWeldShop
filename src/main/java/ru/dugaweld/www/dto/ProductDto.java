@@ -31,6 +31,9 @@ public class ProductDto {
 
     private List<ProductImageDto> images = new ArrayList<>();
 
+    // Ссылка на страницу товара
+    private String link;
+
 }
 
 

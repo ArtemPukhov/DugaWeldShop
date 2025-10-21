@@ -37,3 +37,7 @@ minio:
 # Legacy file storage (will be replaced by MinIO)
 saveImagesPath: ${SAVE_IMAGES_PATH:/opt/dugaweld/images/}
 getImagesPath: ${GET_IMAGES_PATH:http://141.105.71.70/images/}
+
+# Frontend base URL for absolute product links
+frontend:
+  base-url: ${FRONTEND_BASE_URL:http://141.105.71.70:3000}
